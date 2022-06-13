@@ -7,7 +7,7 @@ namespace CatalogService.Data
     {
         public CatalogDbContext(DbContextOptions<CatalogDbContext> opt) : base(opt)
         {
-            //Database.EnsureCreated();
+            Database.EnsureCreated();
         }
 
         public DbSet<Category> Categories { get; set; }
