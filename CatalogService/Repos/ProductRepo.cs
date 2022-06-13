@@ -19,7 +19,7 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(entity));
             }
-            _context.Products.Add(entity);
+            _context.ProductsTable.Add(entity);
         }
 
         public void DeleteProduct(Product entity)
@@ -28,22 +28,22 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(entity));
             }
-            _context.Products.Remove(entity);
+            _context.ProductsTable.Remove(entity);
         }
 
         public IEnumerable<Product> GetAllProducts()
         {
-            return _context.Products.ToList();
+            return _context.ProductsTable.ToList();
         }
 
         public Product GetProductById(Guid entityId)
         {
-            return _context.Products.FirstOrDefault(p => p.Id == entityId);
+            return _context.ProductsTable.FirstOrDefault(p => p.Id == entityId);
         }
 
         public IEnumerable<Product> GetProductsByCategoryId(Guid categoryId)
         {
-            return _context.Products.Where(p=>p.SubCategory.CategoryId == categoryId).ToList();
+            return _context.ProductsTable.Where(p=>p.SubCategory.CategoryId == categoryId).ToList();
         }
 
         public bool SaveChanges()
@@ -57,7 +57,7 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(entity));
             }
-            _context.Products.Update(entity);
+            _context.ProductsTable.Update(entity);
         }
     }
 }

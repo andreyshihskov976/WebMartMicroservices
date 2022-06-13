@@ -20,7 +20,7 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(category));
             }
-            _context.Categories.Add(category);
+            _context.CategoriesTable.Add(category);
         }
 
         public void DeleteCategory(Category category)
@@ -29,17 +29,17 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(category));
             }
-            _context.Categories.Remove(category);
+            _context.CategoriesTable.Remove(category);
         }
 
         public IEnumerable<Category> GetAllCategories()
         {
-            return _context.Categories.ToList();
+            return _context.CategoriesTable.ToList();
         }
 
         public Category GetCategoryById(Guid categoryId)
         {
-            return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+            return _context.CategoriesTable.FirstOrDefault(c => c.Id == categoryId);
         }
 
         public bool SaveChanges()
@@ -53,7 +53,7 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(category));
             }
-            _context.Categories.Update(category);
+            _context.CategoriesTable.Update(category);
         }
     }
 }

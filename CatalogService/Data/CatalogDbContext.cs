@@ -10,9 +10,9 @@ namespace CatalogService.Data
             Database.EnsureCreated();
         }
 
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<SubCategory> SubCategories { get; set; }
-        public DbSet<Product> Products { get; set; }
+        public DbSet<Category> CategoriesTable { get; set; }
+        public DbSet<SubCategory> SubCategoriesTable { get; set; }
+        public DbSet<Product> ProductsTable { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

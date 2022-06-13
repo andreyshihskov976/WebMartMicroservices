@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 Console.WriteLine("--> Using Local Database");
 builder.Services.AddDbContext<CatalogDbContext>(opt =>
-opt.UseSqlServer(@"Server=.\SQLEXPRESS;Database=WebMartCatalog;Trusted_Connection=True;"));
+//opt.UseSqlServer(@"Server=.\SQLEXPRESS;Database=WebMartCatalog;Trusted_Connection=True;"));
+opt.UseNpgsql(@"Host=localhost;Port=5432;Database=WebMartCatalog;Username=postgres;Password=7628"));
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<ISubCategoryRepo, SubCategoryRepo>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
