@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using CatalogService.Dtos;
 using CatalogService.Models;
-using CatalogService.Repos;
+using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +11,10 @@ namespace CatalogService.Controllers
     [ApiController]
     public class SubCategoriesController : ControllerBase
     {
-        private readonly IRepository<SubCategory> _repository;
+        private readonly ISubCategoryRepo _repository;
         private readonly IMapper _mapper;
 
-        public SubCategoriesController(IRepository<SubCategory> repository, IMapper mapper)
+        public SubCategoriesController(ISubCategoryRepo repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
@@ -25,7 +25,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine("--> Getting SubCategories...");
 
-            var subCategories = _repository.GetAllEntities();
+            var subCategories = _repository.GetAllSubCategories();
 
             return Ok(_mapper.Map<IEnumerable<SubCategoryReadDto>>(subCategories));
         }
@@ -35,7 +35,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Getting SubCategory by Id: {id}...");
 
-            var subCategory = _repository.GetEntityById(id);
+            var subCategory = _repository.GetSubCategoryById(id);
             if (subCategory != null)
             {
                 return Ok(_mapper.Map<SubCategoryReadDto>(subCategory));
@@ -44,13 +44,18 @@ namespace CatalogService.Controllers
             return NotFound();
         }
 
-        [HttpPost]
-        public ActionResult CreateSubCategory(SubCategoryCreateDto subCategoryCreateDto)
+        [HttpPost("{categoryId}", Name = "CreateSubCategory")]
+        public ActionResult CreateSubCategory(Guid categoryId, SubCategoryCreateDto subCategoryCreateDto)
         {
-            Console.WriteLine("--> Creating SubCategory...");
+            Console.WriteLine($"--> Creating SubCategory for Category with Id: {categoryId}...");
+
+            if (!_repository.IsCategoryExists(categoryId))
+            {
+                return NotFound();
+            }
 
             var subCategory = _mapper.Map<SubCategory>(subCategoryCreateDto);
-            _repository.CreateEntity(subCategory);
+            _repository.CreateSubCategory(categoryId, subCategory);
             _repository.SaveChanges();
 
             var subCategoryReadDto = _mapper.Map<SubCategoryReadDto>(subCategory);
@@ -67,14 +72,14 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Deleting SubCategory with Id: {id}");
 
-            var subCategory = _repository.GetEntityById(id);
+            var subCategory = _repository.GetSubCategoryById(id);
 
             if (subCategory == null)
             {
                 return NotFound();
             }
 
-            _repository.DeleteEntity(subCategory);
+            _repository.DeleteSubCategory(subCategory);
             _repository.SaveChanges();
 
             return NoContent();
@@ -85,7 +90,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Updating SubCategory with Id: {id}");
 
-            var subCategory = _repository.GetEntityById(id);
+            var subCategory = _repository.GetSubCategoryById(id);
 
             if (subCategory == null)
             {
@@ -93,7 +98,7 @@ namespace CatalogService.Controllers
             }
 
             _mapper.Map(subCategoryCreateDto, subCategory);
-            _repository.UpdateEntity(subCategory);
+            _repository.UpdateSubCategory(subCategory);
             _repository.SaveChanges();
 
             return NoContent();

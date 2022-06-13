@@ -1,10 +1,11 @@
 ﻿using CatalogService.Data;
 using CatalogService.Models;
+using CatalogService.Repos.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatalogService.Repos
 {
-    public class CategoryRepo : IRepository<Category>
+    public class CategoryRepo : ICategoryRepo
     {
         private readonly CatalogDbContext _context;
 
@@ -13,32 +14,32 @@ namespace CatalogService.Repos
             _context = context;
         }
 
-        public void CreateEntity(Category entity)
+        public void CreateCategory(Category category)
         {
-            if (entity == null)
+            if (category == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(category));
             }
-            _context.Categories.Add(entity);
+            _context.Categories.Add(category);
         }
 
-        public void DeleteEntity(Category entity)
+        public void DeleteCategory(Category category)
         {
-            if (entity == null)
+            if (category == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(category));
             }
-            _context.Categories.Remove(entity);
+            _context.Categories.Remove(category);
         }
 
-        public IEnumerable<Category> GetAllEntities()
+        public IEnumerable<Category> GetAllCategories()
         {
             return _context.Categories.ToList();
         }
 
-        public Category GetEntityById(Guid entityId)
+        public Category GetCategoryById(Guid categoryId)
         {
-            return _context.Categories.FirstOrDefault(c => c.Id == entityId);
+            return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
         }
 
         public bool SaveChanges()
@@ -46,13 +47,13 @@ namespace CatalogService.Repos
             return (_context.SaveChanges() >= 0);
         }
 
-        public void UpdateEntity(Category entity)
+        public void UpdateCategory(Category category)
         {
-            if (entity == null)
+            if (category == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(category));
             }
-            _context.Categories.Update(entity);
+            _context.Categories.Update(category);
         }
     }
 }

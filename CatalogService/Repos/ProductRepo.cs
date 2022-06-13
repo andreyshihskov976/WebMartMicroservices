@@ -1,9 +1,10 @@
 ﻿using CatalogService.Data;
 using CatalogService.Models;
+using CatalogService.Repos.Interfaces;
 
 namespace CatalogService.Repos
 {
-    public class ProductRepo : IRepository<Product>
+    public class ProductRepo : IProductRepo
     {
         private readonly CatalogDbContext _context;
 
@@ -12,7 +13,7 @@ namespace CatalogService.Repos
             _context = context;
         }
 
-        public void CreateEntity(Product entity)
+        public void CreateProduct(Product entity)
         {
             if (entity == null)
             {
@@ -21,7 +22,7 @@ namespace CatalogService.Repos
             _context.Products.Add(entity);
         }
 
-        public void DeleteEntity(Product entity)
+        public void DeleteProduct(Product entity)
         {
             if (entity == null)
             {
@@ -30,14 +31,19 @@ namespace CatalogService.Repos
             _context.Products.Remove(entity);
         }
 
-        public IEnumerable<Product> GetAllEntities()
+        public IEnumerable<Product> GetAllProducts()
         {
             return _context.Products.ToList();
         }
 
-        public Product GetEntityById(Guid entityId)
+        public Product GetProductById(Guid entityId)
         {
             return _context.Products.FirstOrDefault(p => p.Id == entityId);
+        }
+
+        public IEnumerable<Product> GetProductsByCategoryId(Guid categoryId)
+        {
+            return _context.Products.Where(p=>p.SubCategory.CategoryId == categoryId).ToList();
         }
 
         public bool SaveChanges()
@@ -45,7 +51,7 @@ namespace CatalogService.Repos
             return (_context.SaveChanges() >= 0);
         }
 
-        public void UpdateEntity(Product entity)
+        public void UpdateProduct(Product entity)
         {
             if (entity == null)
             {

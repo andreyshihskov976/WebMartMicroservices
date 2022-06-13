@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using CatalogService.Dtos;
 using CatalogService.Models;
-using CatalogService.Repos;
+using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +11,10 @@ namespace CatalogService.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IRepository<Product> _repository;
+        private readonly IProductRepo _repository;
         private readonly IMapper _mapper;
 
-        public ProductsController(IRepository<Product> repository, IMapper mapper)
+        public ProductsController(IProductRepo repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
@@ -25,17 +25,17 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine("--> Getting Products...");
 
-            var products = _repository.GetAllEntities();
+            var products = _repository.GetAllProducts();
 
             return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
         }
 
         [HttpGet("{id}", Name = "GetProductById")]
-        public ActionResult<CategoryReadDto> GetProductById(Guid id)
+        public ActionResult<ProductReadDto> GetProductById(Guid id)
         {
             Console.WriteLine($"--> Getting Product by Id: {id}...");
 
-            var product = _repository.GetEntityById(id);
+            var product = _repository.GetProductById(id);
             if (product != null)
             {
                 return Ok(_mapper.Map<ProductReadDto>(product));
@@ -44,13 +44,28 @@ namespace CatalogService.Controllers
             return NotFound();
         }
 
+        [HttpGet("{categoryId}", Name = "GetProductsByCategoryId")]
+        public ActionResult<ProductReadDto> GetProductsByCategoryId(Guid categoryId)
+        {
+            Console.WriteLine($"--> Getting Product by Category with Id: {categoryId}...");
+
+            var products = _repository.GetProductsByCategoryId(categoryId);
+            if(products != null)
+            {
+                return Ok(_mapper.Map<ProductReadDto>(products));
+            }
+
+            return NotFound();
+        }
+
+
         [HttpPost]
         public ActionResult CreateProduct(ProductCreateDto productCreateDto)
         {
             Console.WriteLine("--> Creating Product...");
 
             var product = _mapper.Map<Product>(productCreateDto);
-            _repository.CreateEntity(product);
+            _repository.CreateProduct(product);
             _repository.SaveChanges();
 
             var productReadDto = _mapper.Map<ProductReadDto>(product);
@@ -67,14 +82,14 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Deleting Product with Id: {id}");
 
-            var product = _repository.GetEntityById(id);
+            var product = _repository.GetProductById(id);
 
             if (product == null)
             {
                 return NotFound();
             }
 
-            _repository.DeleteEntity(product);
+            _repository.DeleteProduct(product);
             _repository.SaveChanges();
 
             return NoContent();
@@ -85,7 +100,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Updating Category with Id: {id}");
 
-            var product = _repository.GetEntityById(id);
+            var product = _repository.GetProductById(id);
 
             if (product == null)
             {
@@ -93,7 +108,7 @@ namespace CatalogService.Controllers
             }
 
             _mapper.Map(productCreateDto, product);
-            _repository.UpdateEntity(product);
+            _repository.UpdateProduct(product);
             _repository.SaveChanges();
 
             return NoContent();

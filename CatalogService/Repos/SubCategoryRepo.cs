@@ -1,9 +1,10 @@
 ﻿using CatalogService.Data;
 using CatalogService.Models;
+using CatalogService.Repos.Interfaces;
 
 namespace CatalogService.Repos
 {
-    public class SubCategoryRepo : IRepository<SubCategory>
+    public class SubCategoryRepo : ISubCategoryRepo
     {
         private readonly CatalogDbContext _context;
 
@@ -12,32 +13,38 @@ namespace CatalogService.Repos
             _context = context;
         }
 
-        public void CreateEntity(SubCategory entity)
+        public void CreateSubCategory(Guid categoryId, SubCategory subCategory)
         {
-            if (entity == null)
+            if (subCategory == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(subCategory));
             }
-            _context.SubCategories.Add(entity);
+            subCategory.CategoryId = categoryId;
+            _context.SubCategories.Add(subCategory);
         }
 
-        public void DeleteEntity(SubCategory entity)
+        public void DeleteSubCategory(SubCategory subCategory)
         {
-            if (entity == null)
+            if (subCategory == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(subCategory));
             }
-            _context.SubCategories.Remove(entity);
+            _context.SubCategories.Remove(subCategory);
         }
 
-        public IEnumerable<SubCategory> GetAllEntities()
+        public IEnumerable<SubCategory> GetAllSubCategories()
         {
             return _context.SubCategories.ToList();
         }
 
-        public SubCategory GetEntityById(Guid entityId)
+        public SubCategory GetSubCategoryById(Guid subCategoryId)
         {
-            return _context.SubCategories.FirstOrDefault(sc => sc.Id == entityId);
+            return _context.SubCategories.FirstOrDefault(sc => sc.Id == subCategoryId);
+        }
+
+        public bool IsCategoryExists(Guid categoryId)
+        {
+            return _context.Categories.Any(c => c.Id == categoryId);
         }
 
         public bool SaveChanges()
@@ -45,13 +52,13 @@ namespace CatalogService.Repos
             return (_context.SaveChanges() >= 0);
         }
 
-        public void UpdateEntity(SubCategory entity)
+        public void UpdateSubCategory(SubCategory subCategory)
         {
-            if (entity == null)
+            if (subCategory == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(subCategory));
             }
-            _context.SubCategories.Update(entity);
+            _context.SubCategories.Update(subCategory);
         }
     }
 }

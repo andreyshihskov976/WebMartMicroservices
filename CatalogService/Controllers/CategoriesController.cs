@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using CatalogService.Dtos;
 using CatalogService.Models;
-using CatalogService.Repos;
+using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +11,10 @@ namespace CatalogService.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly IRepository<Category> _repository;
+        private readonly ICategoryRepo _repository;
         private readonly IMapper _mapper;
 
-        public CategoriesController(IRepository<Category> repository, IMapper mapper)
+        public CategoriesController(ICategoryRepo repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
@@ -25,7 +25,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine("--> Getting Categories...");
 
-            var categories = _repository.GetAllEntities();
+            var categories = _repository.GetAllCategories();
 
             return Ok(_mapper.Map<IEnumerable<CategoryReadDto>>(categories));
         }
@@ -35,7 +35,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Getting Category by Id: {id}...");
 
-            var category = _repository.GetEntityById(id);
+            var category = _repository.GetCategoryById(id);
             if (category != null)
             {
                 return Ok(_mapper.Map<CategoryReadDto>(category));
@@ -50,7 +50,7 @@ namespace CatalogService.Controllers
             Console.WriteLine("--> Creating Category...");
 
             var category = _mapper.Map<Category>(categoryCreateDto);
-            _repository.CreateEntity(category);
+            _repository.CreateCategory(category);
             _repository.SaveChanges();
 
             var categoryReadDto = _mapper.Map<CategoryReadDto>(category);
@@ -67,14 +67,14 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Deleting Category with Id: {id}");
 
-            var category = _repository.GetEntityById(id);
+            var category = _repository.GetCategoryById(id);
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            _repository.DeleteEntity(category);
+            _repository.DeleteCategory(category);
             _repository.SaveChanges();
 
             return NoContent();
@@ -85,7 +85,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine($"--> Updating Category with Id: {id}");
 
-            var category = _repository.GetEntityById(id);
+            var category = _repository.GetCategoryById(id);
 
             if (category == null)
             {
@@ -93,7 +93,7 @@ namespace CatalogService.Controllers
             }
 
             _mapper.Map(categoryCreateDto,category);
-            _repository.UpdateEntity(category);
+            _repository.DeleteCategory(category);
             _repository.SaveChanges();
 
             return NoContent();

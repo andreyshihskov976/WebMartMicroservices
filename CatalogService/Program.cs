@@ -1,16 +1,18 @@
 using CatalogService.Data;
 using CatalogService.Models;
 using CatalogService.Repos;
+using CatalogService.Repos.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-Console.WriteLine("--> Using InMemory Database");
-builder.Services.AddDbContext<CatalogDbContext>(opt => opt.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ToDoList_v.2_DB;Trusted_Connection=True;"));
-builder.Services.AddScoped<IRepository<Category>, CategoryRepo>();
-builder.Services.AddScoped<IRepository<SubCategory>, SubCategoryRepo>();
-builder.Services.AddScoped<IRepository<Product>, ProductRepo>();
+Console.WriteLine("--> Using Local Database");
+builder.Services.AddDbContext<CatalogDbContext>(opt =>
+opt.UseSqlServer(@"Server=.\SQLEXPRESS;Database=WebMartCatalog;Trusted_Connection=True;"));
+builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
+builder.Services.AddScoped<ISubCategoryRepo, SubCategoryRepo>();
+builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddControllers();
