@@ -38,7 +38,7 @@ namespace CatalogService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CategoriesTable");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("CatalogService.Models.Product", b =>
@@ -65,7 +65,7 @@ namespace CatalogService.Migrations
 
                     b.HasIndex("SubCategoryId");
 
-                    b.ToTable("ProductsTable");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("CatalogService.Models.SubCategory", b =>
@@ -89,7 +89,7 @@ namespace CatalogService.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("SubCategoriesTable");
+                    b.ToTable("SubCategories");
                 });
 
             modelBuilder.Entity("CatalogService.Models.Product", b =>

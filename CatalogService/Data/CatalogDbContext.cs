@@ -7,12 +7,12 @@ namespace CatalogService.Data
     {
         public CatalogDbContext(DbContextOptions<CatalogDbContext> opt) : base(opt)
         {
-            Database.EnsureCreated();
+            
         }
 
-        public DbSet<Category> CategoriesTable { get; set; }
-        public DbSet<SubCategory> SubCategoriesTable { get; set; }
-        public DbSet<Product> ProductsTable { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<SubCategory> SubCategories { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

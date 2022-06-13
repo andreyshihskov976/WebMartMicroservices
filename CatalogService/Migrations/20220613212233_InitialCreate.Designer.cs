@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatalogService.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20220613205033_InitialCreate_PostgreSQL")]
-    partial class InitialCreate_PostgreSQL
+    [Migration("20220613212233_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -40,7 +40,7 @@ namespace CatalogService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CategoriesTable");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("CatalogService.Models.Product", b =>
@@ -67,7 +67,7 @@ namespace CatalogService.Migrations
 
                     b.HasIndex("SubCategoryId");
 
-                    b.ToTable("ProductsTable");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("CatalogService.Models.SubCategory", b =>
@@ -91,7 +91,7 @@ namespace CatalogService.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("SubCategoriesTable");
+                    b.ToTable("SubCategories");
                 });
 
             modelBuilder.Entity("CatalogService.Models.Product", b =>

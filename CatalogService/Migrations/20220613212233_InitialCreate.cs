@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CatalogService.Migrations
 {
-    public partial class InitialCreate_PostgreSQL : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "CategoriesTable",
+                name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -19,11 +19,11 @@ namespace CatalogService.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CategoriesTable", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "SubCategoriesTable",
+                name: "SubCategories",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -33,17 +33,17 @@ namespace CatalogService.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SubCategoriesTable", x => x.Id);
+                    table.PrimaryKey("PK_SubCategories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SubCategoriesTable_CategoriesTable_CategoryId",
+                        name: "FK_SubCategories_Categories_CategoryId",
                         column: x => x.CategoryId,
-                        principalTable: "CategoriesTable",
+                        principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductsTable",
+                name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -54,36 +54,36 @@ namespace CatalogService.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductsTable", x => x.Id);
+                    table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductsTable_SubCategoriesTable_SubCategoryId",
+                        name: "FK_Products_SubCategories_SubCategoryId",
                         column: x => x.SubCategoryId,
-                        principalTable: "SubCategoriesTable",
+                        principalTable: "SubCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductsTable_SubCategoryId",
-                table: "ProductsTable",
+                name: "IX_Products_SubCategoryId",
+                table: "Products",
                 column: "SubCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SubCategoriesTable_CategoryId",
-                table: "SubCategoriesTable",
+                name: "IX_SubCategories_CategoryId",
+                table: "SubCategories",
                 column: "CategoryId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ProductsTable");
+                name: "Products");
 
             migrationBuilder.DropTable(
-                name: "SubCategoriesTable");
+                name: "SubCategories");
 
             migrationBuilder.DropTable(
-                name: "CategoriesTable");
+                name: "Categories");
         }
     }
 }

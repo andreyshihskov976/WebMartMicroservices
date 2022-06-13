@@ -20,7 +20,7 @@ namespace CatalogService.Repos
                 throw new ArgumentNullException(nameof(subCategory));
             }
             subCategory.CategoryId = categoryId;
-            _context.SubCategoriesTable.Add(subCategory);
+            _context.SubCategories.Add(subCategory);
         }
 
         public void DeleteSubCategory(SubCategory subCategory)
@@ -29,22 +29,22 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(subCategory));
             }
-            _context.SubCategoriesTable.Remove(subCategory);
+            _context.SubCategories.Remove(subCategory);
         }
 
         public IEnumerable<SubCategory> GetAllSubCategories()
         {
-            return _context.SubCategoriesTable.ToList();
+            return _context.SubCategories.ToList();
         }
 
         public SubCategory GetSubCategoryById(Guid subCategoryId)
         {
-            return _context.SubCategoriesTable.FirstOrDefault(sc => sc.Id == subCategoryId);
+            return _context.SubCategories.FirstOrDefault(sc => sc.Id == subCategoryId);
         }
 
         public bool IsCategoryExists(Guid categoryId)
         {
-            return _context.CategoriesTable.Any(c => c.Id == categoryId);
+            return _context.Categories.Any(c => c.Id == categoryId);
         }
 
         public bool SaveChanges()
@@ -58,7 +58,7 @@ namespace CatalogService.Repos
             {
                 throw new ArgumentNullException(nameof(subCategory));
             }
-            _context.SubCategoriesTable.Update(subCategory);
+            _context.SubCategories.Update(subCategory);
         }
     }
 }
