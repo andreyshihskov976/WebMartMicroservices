@@ -33,7 +33,7 @@ namespace CatalogService.Controllers
         [HttpGet("{id}", Name = "GetProductById")]
         public ActionResult<ProductReadDto> GetProductById(Guid id)
         {
-            Console.WriteLine($"--> Getting Product by Id: {id}...");
+            Console.WriteLine($"--> Getting Product with Id: {id}...");
 
             var product = _repository.GetProductById(id);
             if (product != null)
@@ -44,28 +44,53 @@ namespace CatalogService.Controllers
             return NotFound();
         }
 
-        [HttpGet("{categoryId}", Name = "GetProductsByCategoryId")]
-        public ActionResult<ProductReadDto> GetProductsByCategoryId(Guid categoryId)
+        [HttpGet("InCategory/{categoryId}", Name = "GetProductsByCategoryId")]
+        public ActionResult<IEnumerable<ProductReadDto>> GetProductsByCategoryId(Guid categoryId)
         {
-            Console.WriteLine($"--> Getting Product by Category with Id: {categoryId}...");
+            Console.WriteLine($"--> Getting Products by Category with Id: {categoryId}...");
 
             var products = _repository.GetProductsByCategoryId(categoryId);
-            if(products != null)
+            
+            return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+        }
+
+        [HttpGet("InSubCategory/{subCategoryId}", Name = "GetProductsBySubCategoryId")]
+        public ActionResult<IEnumerable<ProductReadDto>> GetProductsBySubCategoryId(Guid subCategoryId)
+        {
+            Console.WriteLine($"--> Getting Products by SubCategory with Id: {subCategoryId}...");
+
+            var products = _repository.GetProductsByCategoryId(subCategoryId);
+
+            return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+        }
+
+        [HttpGet("Detailed/{id}", Name = "GetDetailedProductById")]
+        public ActionResult<Product> GetDetailedProductById(Guid id)
+        {
+            Console.WriteLine($" Getting detailed Product with Id: {id}...");
+
+            var product = _repository.GetProductById(id);
+            if(product != null)
             {
-                return Ok(_mapper.Map<ProductReadDto>(products));
+                return Ok(product);
             }
 
             return NotFound();
         }
 
 
-        [HttpPost]
-        public ActionResult CreateProduct(ProductCreateDto productCreateDto)
+        [HttpPost("{subCategoryId}", Name = "CreateProduct")]
+        public ActionResult CreateProduct(Guid subCategoryId, ProductCreateDto productCreateDto)
         {
             Console.WriteLine("--> Creating Product...");
 
+            if(!_repository.IsSubCategoryExists(subCategoryId))
+            {
+                return NotFound();
+            }
+
             var product = _mapper.Map<Product>(productCreateDto);
-            _repository.CreateProduct(product);
+            _repository.CreateProduct(subCategoryId, product);
             _repository.SaveChanges();
 
             var productReadDto = _mapper.Map<ProductReadDto>(product);

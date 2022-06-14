@@ -13,22 +13,23 @@ namespace CatalogService.Repos
             _context = context;
         }
 
-        public void CreateProduct(Product entity)
+        public void CreateProduct(Guid subCategoryId, Product product)
         {
-            if (entity == null)
+            if (product == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(product));
             }
-            _context.Products.Add(entity);
+            product.SubCategoryId = subCategoryId;
+            _context.Products.Add(product);
         }
 
-        public void DeleteProduct(Product entity)
+        public void DeleteProduct(Product product)
         {
-            if (entity == null)
+            if (product == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(product));
             }
-            _context.Products.Remove(entity);
+            _context.Products.Remove(product);
         }
 
         public IEnumerable<Product> GetAllProducts()
@@ -36,9 +37,9 @@ namespace CatalogService.Repos
             return _context.Products.ToList();
         }
 
-        public Product GetProductById(Guid entityId)
+        public Product GetProductById(Guid productId)
         {
-            return _context.Products.FirstOrDefault(p => p.Id == entityId);
+            return _context.Products.FirstOrDefault(p => p.Id == productId);
         }
 
         public IEnumerable<Product> GetProductsByCategoryId(Guid categoryId)
@@ -46,18 +47,28 @@ namespace CatalogService.Repos
             return _context.Products.Where(p=>p.SubCategory.CategoryId == categoryId).ToList();
         }
 
+        public IEnumerable<Product> GetProductsBySubCategoryId(Guid subCategoryId)
+        {
+            return _context.Products.Where(p=>p.SubCategoryId == subCategoryId).ToList();
+        }
+
+        public bool IsSubCategoryExists(Guid subCategoryId)
+        {
+            return _context.SubCategories.Any(sc => sc.Id == subCategoryId);
+        }
+
         public bool SaveChanges()
         {
             return (_context.SaveChanges() >= 0);
         }
 
-        public void UpdateProduct(Product entity)
+        public void UpdateProduct(Product product)
         {
-            if (entity == null)
+            if (product == null)
             {
-                throw new ArgumentNullException(nameof(entity));
+                throw new ArgumentNullException(nameof(product));
             }
-            _context.Products.Update(entity);
+            _context.Products.Update(product);
         }
     }
 }

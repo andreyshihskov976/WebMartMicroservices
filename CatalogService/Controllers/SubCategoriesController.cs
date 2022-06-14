@@ -44,6 +44,16 @@ namespace CatalogService.Controllers
             return NotFound();
         }
 
+        [HttpGet("InCategory/{categoryId}", Name = "GetSubCategoryByCategoryId")]
+        public ActionResult<IEnumerable<SubCategoryReadDto>> GetSubCategoriesByCategoryId(Guid categoryId)
+        {
+            Console.WriteLine($"--> Getting SubCategories by Id: {categoryId}...");
+
+            var subCategories = _repository.GetSubCategoriesByCategoryId(categoryId);
+
+            return Ok(_mapper.Map<IEnumerable<SubCategoryReadDto>>(subCategories));
+        }
+
         [HttpPost("{categoryId}", Name = "CreateSubCategory")]
         public ActionResult CreateSubCategory(Guid categoryId, SubCategoryCreateDto subCategoryCreateDto)
         {

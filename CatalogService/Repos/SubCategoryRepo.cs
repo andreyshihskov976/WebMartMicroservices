@@ -37,6 +37,11 @@ namespace CatalogService.Repos
             return _context.SubCategories.ToList();
         }
 
+        public IEnumerable<SubCategory> GetSubCategoriesByCategoryId(Guid categoryId)
+        {
+            return _context.SubCategories.Where(sc => sc.CategoryId == categoryId);
+        }
+
         public SubCategory GetSubCategoryById(Guid subCategoryId)
         {
             return _context.SubCategories.FirstOrDefault(sc => sc.Id == subCategoryId);

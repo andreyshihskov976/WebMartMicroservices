@@ -8,9 +8,10 @@ namespace CatalogService.Repos.Interfaces
         IEnumerable<Product> GetAllProducts();
         Product GetProductById(Guid productId);
         IEnumerable<Product> GetProductsByCategoryId(Guid categoryId);
-        void CreateProduct(Product product);
+        IEnumerable<Product> GetProductsBySubCategoryId(Guid subCategoryId);
+        void CreateProduct(Guid subCategoryId, Product product);
         void DeleteProduct(Product product);
         void UpdateProduct(Product product);
-
+        bool IsSubCategoryExists(Guid subCategoryId);
     }
 }

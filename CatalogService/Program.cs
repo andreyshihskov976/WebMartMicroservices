@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-Console.WriteLine("--> Using Local Database");
+Console.WriteLine("--> Using PostgreSQL Database");
 builder.Services.AddDbContext<CatalogDbContext>(opt =>
 //opt.UseSqlServer(@"Server=.\SQLEXPRESS;Database=WebMartCatalog;Trusted_Connection=True;"));
 opt.UseNpgsql(@"Host=localhost;Port=5432;Database=WebMartCatalog;Username=postgres;Password=7628"));
@@ -22,6 +22,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+PrepDb.PrepPopulation(app, builder.Environment.IsProduction());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
