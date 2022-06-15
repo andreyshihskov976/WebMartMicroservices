@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using CatalogService.Dtos;
 using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CatalogService.Controllers
 {
@@ -19,15 +22,32 @@ namespace CatalogService.Controllers
             _repository = repository;
             _mapper = mapper;
         }
-
+        
         [HttpGet]
-        public ActionResult<IEnumerable<CategoryReadDto>> GetAllCategories()
+        public ActionResult<IEnumerable<CategoryReadDto>> GetCategories([FromQuery] CategoryParameters parameters)
         {
-            Console.WriteLine("--> Getting Categories...");
+            Console.WriteLine("--> Getting Сategories by pages...");
 
             var categories = _repository.GetAllCategories();
 
-            return Ok(_mapper.Map<IEnumerable<CategoryReadDto>>(categories));
+            var categoriesDtos = PagedList<CategoryReadDto>.ToPagedList(
+                _mapper.Map<ICollection<CategoryReadDto>>(categories),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new{
+                categoriesDtos.TotalCount,
+                categoriesDtos.PageSize,
+                categoriesDtos.CurrentPage,
+                categoriesDtos.TotalPages,
+                categoriesDtos.HasNext,
+                categoriesDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+	        return Ok(categoriesDtos);
         }
 
         [HttpGet("{id}", Name = "GetCategoryById")]

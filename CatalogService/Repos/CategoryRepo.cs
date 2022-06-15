@@ -1,5 +1,7 @@
 ﻿using CatalogService.Data;
 using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 using CatalogService.Repos.Interfaces;
 
 namespace CatalogService.Repos
@@ -31,9 +33,9 @@ namespace CatalogService.Repos
             _context.Categories.Remove(category);
         }
 
-        public IEnumerable<Category> GetAllCategories()
+        public ICollection<Category> GetAllCategories()
         {
-            return _context.Categories.ToList();
+            return _context.Categories.OrderBy(on => on.Name).ToList();
         }
 
         public Category GetCategoryById(Guid categoryId)

@@ -1,17 +1,20 @@
 ﻿using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 
 namespace CatalogService.Repos.Interfaces
 {
     public interface IProductRepo
     {
         bool SaveChanges();
-        IEnumerable<Product> GetAllProducts();
+        ICollection<Product> GetAllProducts();
         Product GetProductById(Guid productId);
-        IEnumerable<Product> GetProductsByCategoryId(Guid categoryId);
-        IEnumerable<Product> GetProductsBySubCategoryId(Guid subCategoryId);
+        ICollection<Product> GetProductsByCategoryId(Guid categoryId);
+        ICollection<Product> GetProductsBySubCategoryId(Guid subCategoryId);
         void CreateProduct(Guid subCategoryId, Product product);
         void DeleteProduct(Product product);
         void UpdateProduct(Product product);
         bool IsSubCategoryExists(Guid subCategoryId);
+        bool IsCategoryExists(Guid categoryId);
     }
 }

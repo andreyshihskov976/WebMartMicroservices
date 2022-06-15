@@ -1,5 +1,7 @@
 ﻿using CatalogService.Data;
 using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 using CatalogService.Repos.Interfaces;
 
 namespace CatalogService.Repos
@@ -32,14 +34,14 @@ namespace CatalogService.Repos
             _context.SubCategories.Remove(subCategory);
         }
 
-        public IEnumerable<SubCategory> GetAllSubCategories()
+        public ICollection<SubCategory> GetAllSubCategories()
         {
-            return _context.SubCategories.ToList();
+            return _context.SubCategories.OrderBy(on => on.Name).ToList();
         }
 
-        public IEnumerable<SubCategory> GetSubCategoriesByCategoryId(Guid categoryId)
+        public ICollection<SubCategory> GetSubCategoriesByCategoryId(Guid categoryId)
         {
-            return _context.SubCategories.Where(sc => sc.CategoryId == categoryId);
+            return _context.SubCategories.Where(sc => sc.CategoryId == categoryId).OrderBy(on => on.Name).ToList();
         }
 
         public SubCategory GetSubCategoryById(Guid subCategoryId)

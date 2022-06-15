@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using CatalogService.Dtos;
 using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CatalogService.Controllers
 {
@@ -21,13 +24,30 @@ namespace CatalogService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<SubCategoryReadDto>> GetAllSubCategories()
+        public ActionResult<IEnumerable<SubCategoryReadDto>> GetSubCategories([FromQuery] SubCategoryParameters parameters)
         {
-            Console.WriteLine("--> Getting SubCategories...");
+            Console.WriteLine("--> Getting SubСategories by pages...");
 
             var subCategories = _repository.GetAllSubCategories();
 
-            return Ok(_mapper.Map<IEnumerable<SubCategoryReadDto>>(subCategories));
+            var subCategoriesDtos = PagedList<SubCategoryReadDto>.ToPagedList(
+                _mapper.Map<ICollection<SubCategoryReadDto>>(subCategories),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new{
+                subCategoriesDtos.TotalCount,
+                subCategoriesDtos.PageSize,
+                subCategoriesDtos.CurrentPage,
+                subCategoriesDtos.TotalPages,
+                subCategoriesDtos.HasNext,
+                subCategoriesDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+	        return Ok(subCategoriesDtos);
         }
 
         [HttpGet("{id}", Name = "GetSubCategoryById")]
@@ -44,14 +64,36 @@ namespace CatalogService.Controllers
             return NotFound();
         }
 
-        [HttpGet("InCategory/{categoryId}", Name = "GetSubCategoryByCategoryId")]
-        public ActionResult<IEnumerable<SubCategoryReadDto>> GetSubCategoriesByCategoryId(Guid categoryId)
+        [HttpGet("InCategory/{categoryId}/", Name = "GetSubCategoryByCategoryId")]
+        public ActionResult<IEnumerable<SubCategoryReadDto>> GetSubCategoriesByCategoryId(Guid categoryId, [FromQuery] SubCategoryParameters parameters)
         {
-            Console.WriteLine($"--> Getting SubCategories by Id: {categoryId}...");
+            Console.WriteLine($"--> Getting SubCategories by Category with Id: {categoryId} by pages...");
+
+            if(!_repository.IsCategoryExists(categoryId))
+            {
+                return NotFound();
+            }
 
             var subCategories = _repository.GetSubCategoriesByCategoryId(categoryId);
 
-            return Ok(_mapper.Map<IEnumerable<SubCategoryReadDto>>(subCategories));
+            var subCategoriesDtos = PagedList<SubCategoryReadDto>.ToPagedList(
+                _mapper.Map<ICollection<SubCategoryReadDto>>(subCategories),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new{
+                subCategoriesDtos.TotalCount,
+                subCategoriesDtos.PageSize,
+                subCategoriesDtos.CurrentPage,
+                subCategoriesDtos.TotalPages,
+                subCategoriesDtos.HasNext,
+                subCategoriesDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(subCategoriesDtos);
         }
 
         [HttpPost("{categoryId}", Name = "CreateSubCategory")]

@@ -1,5 +1,7 @@
 ﻿using CatalogService.Data;
 using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 using CatalogService.Repos.Interfaces;
 
 namespace CatalogService.Repos
@@ -32,9 +34,9 @@ namespace CatalogService.Repos
             _context.Products.Remove(product);
         }
 
-        public IEnumerable<Product> GetAllProducts()
+        public ICollection<Product> GetAllProducts()
         {
-            return _context.Products.ToList();
+            return _context.Products.OrderBy(on => on.Name).ToList();
         }
 
         public Product GetProductById(Guid productId)
@@ -42,19 +44,24 @@ namespace CatalogService.Repos
             return _context.Products.FirstOrDefault(p => p.Id == productId);
         }
 
-        public IEnumerable<Product> GetProductsByCategoryId(Guid categoryId)
+        public ICollection<Product> GetProductsByCategoryId(Guid categoryId)
         {
-            return _context.Products.Where(p=>p.SubCategory.CategoryId == categoryId).ToList();
+            return _context.Products.Where(p=>p.SubCategory.CategoryId == categoryId).OrderBy(on => on.Name).ToList();
         }
 
-        public IEnumerable<Product> GetProductsBySubCategoryId(Guid subCategoryId)
+        public ICollection<Product> GetProductsBySubCategoryId(Guid subCategoryId)
         {
-            return _context.Products.Where(p=>p.SubCategoryId == subCategoryId).ToList();
+            return _context.Products.Where(p=>p.SubCategoryId == subCategoryId).OrderBy(on => on.Name).ToList();
         }
 
         public bool IsSubCategoryExists(Guid subCategoryId)
         {
             return _context.SubCategories.Any(sc => sc.Id == subCategoryId);
+        }
+
+        public bool IsCategoryExists(Guid categoryId)
+        {
+            return _context.Categories.Any(c => c.Id == categoryId);
         }
 
         public bool SaveChanges()

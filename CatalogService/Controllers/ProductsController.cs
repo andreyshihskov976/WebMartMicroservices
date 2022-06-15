@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using CatalogService.Dtos;
 using CatalogService.Models;
+using CatalogService.Pages;
+using CatalogService.Pages.Models;
 using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CatalogService.Controllers
 {
@@ -21,13 +24,31 @@ namespace CatalogService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ProductReadDto>> GetAllProducts()
+        public ActionResult<IEnumerable<ProductReadDto>> GetAllProducts([FromQuery] ProductParameters parameters)
         {
-            Console.WriteLine("--> Getting Products...");
+            Console.WriteLine("--> Getting SubСategories by pages...");
 
             var products = _repository.GetAllProducts();
 
-            return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+            var productsDtos = PagedList<ProductReadDto>.ToPagedList(
+                _mapper.Map<ICollection<ProductReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
         }
 
         [HttpGet("{id}", Name = "GetProductById")]
@@ -44,24 +65,70 @@ namespace CatalogService.Controllers
             return NotFound();
         }
 
-        [HttpGet("InCategory/{categoryId}", Name = "GetProductsByCategoryId")]
-        public ActionResult<IEnumerable<ProductReadDto>> GetProductsByCategoryId(Guid categoryId)
+        [HttpGet("InCategory/{categoryId}/", Name = "GetProductsByCategoryId")]
+        public ActionResult<IEnumerable<ProductReadDto>> GetProductsByCategoryId(Guid categoryId, [FromQuery] ProductParameters parameters)
         {
-            Console.WriteLine($"--> Getting Products by Category with Id: {categoryId}...");
+            Console.WriteLine($"--> Getting Products by Category with Id: {categoryId} by pages...");
+
+            if(_repository.IsSubCategoryExists(categoryId))
+            {
+                return NotFound();
+            }
 
             var products = _repository.GetProductsByCategoryId(categoryId);
-            
-            return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+
+            var productsDtos = PagedList<ProductReadDto>.ToPagedList(
+                _mapper.Map<ICollection<ProductReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
         }
 
-        [HttpGet("InSubCategory/{subCategoryId}", Name = "GetProductsBySubCategoryId")]
-        public ActionResult<IEnumerable<ProductReadDto>> GetProductsBySubCategoryId(Guid subCategoryId)
+        [HttpGet("InSubCategory/{subCategoryId}/", Name = "GetProductsBySubCategoryId")]
+        public ActionResult<IEnumerable<ProductReadDto>> GetProductsBySubCategoryId(Guid subCategoryId, [FromQuery] ProductParameters parameters)
         {
-            Console.WriteLine($"--> Getting Products by SubCategory with Id: {subCategoryId}...");
+            Console.WriteLine($"--> Getting Products by SubCategory with Id: {subCategoryId} by pages...");
+
+            if(!_repository.IsSubCategoryExists(subCategoryId))
+            {
+                return NotFound();
+            }
 
             var products = _repository.GetProductsByCategoryId(subCategoryId);
 
-            return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+            var productsDtos = PagedList<ProductReadDto>.ToPagedList(
+                            _mapper.Map<ICollection<ProductReadDto>>(products),
+                            parameters.PageNumber,
+                            parameters.PageSize
+                        );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
         }
 
         [HttpGet("Detailed/{id}", Name = "GetDetailedProductById")]
@@ -70,7 +137,7 @@ namespace CatalogService.Controllers
             Console.WriteLine($" Getting detailed Product with Id: {id}...");
 
             var product = _repository.GetProductById(id);
-            if(product != null)
+            if (product != null)
             {
                 return Ok(product);
             }
@@ -84,7 +151,7 @@ namespace CatalogService.Controllers
         {
             Console.WriteLine("--> Creating Product...");
 
-            if(!_repository.IsSubCategoryExists(subCategoryId))
+            if (!_repository.IsSubCategoryExists(subCategoryId))
             {
                 return NotFound();
             }
