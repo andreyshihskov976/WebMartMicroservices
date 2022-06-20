@@ -22,8 +22,8 @@ namespace CatalogService.Controllers
             _mapper = mapper;
         }
 
-        [Authorize]
         [HttpGet("[action]", Name = "GetTestString")]
+        [Authorize]
         public IActionResult GetTestString()
         {
             return Ok("--> Message from Catalog API");

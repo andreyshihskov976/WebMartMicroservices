@@ -10,25 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<CatalogDbContext>(opt =>
     opt.UseNpgsql(
-        builder.Configuration.GetValue<string>("ConnectionString")
+        builder.Configuration.GetValue<string>("DbConnection")
     ));
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, config =>
-    {
-        config.Authority = "http://localhost:5146";
-        config.Audience = "CatalogService";
-    });
 
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<ISubCategoryRepo, SubCategoryRepo>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-builder.Services.AddAuthentication();
-
-// builder.Services.AddControllers().AddJsonOptions(x =>
-//                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddControllers();
 
@@ -48,8 +37,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication();
 
 app.UseAuthorization();
 

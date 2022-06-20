@@ -5,12 +5,12 @@ namespace CatalogService.DTOs.Product
     public class ProductCreateDto
     {
         [Required]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         [Required]
-        public string? Description { get; set; }
+        public string Description { get; set; }
 
         [Required]
-        public double? Price { get; set; }
+        public double Price { get; set; }
     }
 }
