@@ -1,6 +1,14 @@
+using IdentityService;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddIdentityServer()
+    .AddInMemoryIdentityResources(Configuration.IdentityResources)
+    .AddInMemoryClients(Configuration.Clients)
+    .AddInMemoryApiResources(Configuration.ApiResources)
+    .AddInMemoryApiScopes(Configuration.ApiScopes)
+    .AddDeveloperSigningCredential();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -15,6 +23,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseIdentityServer();
 
 app.UseHttpsRedirection();
 
