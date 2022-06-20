@@ -23,8 +23,7 @@ namespace CatalogService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetTestString")]
-        [Authorize]
-        public IActionResult GetTestString()
+        public ActionResult<string> GetTestString()
         {
             return Ok("--> Message from Catalog API");
         }
