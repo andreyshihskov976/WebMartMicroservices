@@ -1,4 +1,4 @@
-namespace WebMart.Microservices.DTOs.Category
+namespace WebMart.Microservices.Extensions.DTOs.Category
 {
     public class CategoryReadDto
     {

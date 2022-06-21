@@ -1,10 +1,10 @@
 using AutoMapper;
-using WebMart.Microservices.DTOs.Category;
-using WebMart.Microservices.DTOs.Product;
-using WebMart.Microservices.DTOs.SubCategory;
-using WebMart.Microservices.Models;
+using WebMart.Microservices.CatalogService.Models;
+using WebMart.Microservices.Extensions.DTOs.Category;
+using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Microservices.Extensions.DTOs.SubCategory;
 
-namespace WebMart.Microservices.MapperProfiles
+namespace WebMart.Microservices.CatalogService.MapperProfiles
 {
     public class CatalogProfile : Profile
     {

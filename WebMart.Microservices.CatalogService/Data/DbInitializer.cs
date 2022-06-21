@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.Data;
-using WebMart.Microservices.Models;
+using WebMart.Microservices.CatalogService.Models;
 
-namespace CatalogService.Data
+namespace WebMart.Microservices.CatalogService.Data
 {
     public static class DbInitializer
     {

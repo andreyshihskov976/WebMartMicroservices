@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WebMart.Microservices.Models
+namespace WebMart.Microservices.CatalogService.Models
 {
-    public class SubCategory
+    public class Product
     {
         [Key]
         [Required]
@@ -11,14 +11,14 @@ namespace WebMart.Microservices.Models
         [Required]
         public string Name { get; set; }
 
-        [Required]
         public string Description { get; set; }
 
         [Required]
-        public Guid? CategoryId { get; set; }
+        public double Price { get; set; }
 
-        public Category Category { get; set; }
+        [Required]
+        public Guid? SubCategoryId { get; set; }
 
-        public ICollection<Product> Products { get; set; }
+        public SubCategory SubCategory { get; set; }
     }
 }

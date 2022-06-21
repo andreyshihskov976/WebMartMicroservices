@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WebMart.Microservices.DTOs.Category
+namespace WebMart.Microservices.Extensions.DTOs.Category
 {
     public class CategoryCreateDto
     {

@@ -1,4 +1,4 @@
-namespace WebMart.Microservices.Pages
+namespace WebMart.Microservices.Extensions.Pages
 {
     public class PageParams
     {

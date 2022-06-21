@@ -1,12 +1,12 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using WebMart.Microservices.DTOs.Product;
-using WebMart.Microservices.Models;
-using WebMart.Microservices.Pages;
-using WebMart.Microservices.Repos.Interfaces;
+using WebMart.Microservices.CatalogService.Models;
+using WebMart.Microservices.CatalogService.Repos.Interfaces;
+using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Microservices.Extensions.Pages;
 
-namespace CatalogService.Controllers
+namespace WebMart.Microservices.CatalogService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

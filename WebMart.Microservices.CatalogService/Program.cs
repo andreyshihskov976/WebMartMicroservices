@@ -1,8 +1,7 @@
-using CatalogService.Data;
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.Data;
-using WebMart.Microservices.Repos;
-using WebMart.Microservices.Repos.Interfaces;
+using WebMart.Microservices.CatalogService.Data;
+using WebMart.Microservices.CatalogService.Repos;
+using WebMart.Microservices.CatalogService.Repos.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

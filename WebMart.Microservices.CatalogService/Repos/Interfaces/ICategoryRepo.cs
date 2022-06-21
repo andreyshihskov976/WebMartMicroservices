@@ -1,6 +1,6 @@
-using WebMart.Microservices.Models;
+using WebMart.Microservices.CatalogService.Models;
 
-namespace WebMart.Microservices.Repos.Interfaces
+namespace WebMart.Microservices.CatalogService.Repos.Interfaces
 {
     public interface ICategoryRepo
     {

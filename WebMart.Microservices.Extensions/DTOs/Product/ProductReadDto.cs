@@ -1,4 +1,4 @@
-namespace WebMart.Microservices.DTOs.Product
+namespace WebMart.Microservices.Extensions.DTOs.Product
 {
     public class ProductReadDto
     {
