@@ -1,3 +1,5 @@
+using WebMart.Microservices.Extensions.EventProcessing;
+
 namespace WebMart.Microservices.Extensions.DTOs.Product
 {
     public class ProductPublishedDto
@@ -9,5 +11,6 @@ namespace WebMart.Microservices.Extensions.DTOs.Product
         public string Description { get; set; }
 
         public double Price { get; set; }
+        public EventType Event { get; set; }
     }
 }

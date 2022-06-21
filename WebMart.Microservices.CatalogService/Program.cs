@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebMart.Microservices.CatalogService.AsyncDataServices;
 using WebMart.Microservices.CatalogService.Data;
 using WebMart.Microservices.CatalogService.Repos;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
@@ -14,6 +15,14 @@ builder.Services.AddDbContext<CatalogDbContext>(opt =>
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<ISubCategoryRepo, SubCategoryRepo>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
+
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
+
+// builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+    // .ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
+    //     {
+    //        ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+    //     });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

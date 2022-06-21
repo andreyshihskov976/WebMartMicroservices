@@ -19,6 +19,7 @@ namespace WebMart.Microservices.CatalogService.MapperProfiles
 
             CreateMap<Product, ProductReadDto>();
             CreateMap<ProductCreateDto, Product>();
+            CreateMap<ProductReadDto, ProductPublishedDto>();
         }
     }
 }

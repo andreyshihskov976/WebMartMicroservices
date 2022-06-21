@@ -1,9 +1,11 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using WebMart.Microservices.CatalogService.AsyncDataServices;
 using WebMart.Microservices.CatalogService.Models;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
 using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Microservices.Extensions.EventProcessing;
 using WebMart.Microservices.Extensions.Pages;
 
 namespace WebMart.Microservices.CatalogService.Controllers
@@ -14,11 +16,13 @@ namespace WebMart.Microservices.CatalogService.Controllers
     {
         private readonly IProductRepo _repository;
         private readonly IMapper _mapper;
+        private readonly IMessageBusClient _messageBusClient;
 
-        public ProductsController(IProductRepo repository, IMapper mapper)
+        public ProductsController(IProductRepo repository, IMapper mapper, IMessageBusClient messageBusClient)
         {
             _repository = repository;
             _mapper = mapper;
+            _messageBusClient = messageBusClient;
         }
 
         [HttpGet("[action]", Name = "GetProductsByPages")]
@@ -161,6 +165,18 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _repository.SaveChanges();
 
             var productReadDto = _mapper.Map<ProductReadDto>(product);
+
+            //Send Async Message
+            try
+            {
+                var productPublishedDto = _mapper.Map<ProductPublishedDto>(productReadDto);
+                productPublishedDto.Event = EventType.ProductPublished;
+                _messageBusClient.PublishNewProduct(productPublishedDto);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"--> Could not send asynchronously: {ex.Message}");
+            }
 
             return CreatedAtRoute(
                 nameof(GetProductById),
