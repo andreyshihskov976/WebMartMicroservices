@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebMart.Microservices.BasketService.Data;
@@ -11,9 +12,10 @@ using WebMart.Microservices.BasketService.Data;
 namespace WebMart.Microservices.BasketService.Migrations
 {
     [DbContext(typeof(BasketDbContext))]
-    partial class BasketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220621171629_Customer_changed_to_CustomerId")]
+    partial class Customer_changed_to_CustomerId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

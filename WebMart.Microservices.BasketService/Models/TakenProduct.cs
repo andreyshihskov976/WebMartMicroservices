@@ -15,7 +15,7 @@ namespace WebMart.Microservices.BasketService.Models
         public Guid BasketId { get; set; }
 
         public Product Product { get; set; }
-        
+
         public Basket Basket { get; set; }
     }
 }

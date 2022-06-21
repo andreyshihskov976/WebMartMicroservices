@@ -9,7 +9,7 @@ namespace WebMart.Microservices.BasketService.Models
         public Guid Id { get; set; }
 
         [Required]
-        public string Customer { get; set; }
+        public Guid CustomerId { get; set; }
 
         public List<TakenProduct> TakenProducts { get; set; }
     }
