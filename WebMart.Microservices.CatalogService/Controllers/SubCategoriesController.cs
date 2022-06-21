@@ -1,11 +1,10 @@
 using AutoMapper;
-using CatalogService.DTOs.Category;
-using CatalogService.DTOs.SubCategory;
-using CatalogService.Models;
-using CatalogService.Pages;
-using CatalogService.Repos.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using WebMart.Microservices.DTOs.SubCategory;
+using WebMart.Microservices.Models;
+using WebMart.Microservices.Pages;
+using WebMart.Microservices.Repos.Interfaces;
 
 namespace CatalogService.Controllers
 {

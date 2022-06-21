@@ -1,11 +1,11 @@
-using CatalogService.Data;
-using CatalogService.Models;
-using CatalogService.Repos.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using WebMart.Microservices.Data;
+using WebMart.Microservices.Models;
+using WebMart.Microservices.Repos.Interfaces;
 
-namespace CatalogService.Repos
+namespace WebMart.Microservices.Repos
 {
-    class ProductRepo : IProductRepo
+    public class ProductRepo : IProductRepo
     {
         private readonly CatalogDbContext _context;
 

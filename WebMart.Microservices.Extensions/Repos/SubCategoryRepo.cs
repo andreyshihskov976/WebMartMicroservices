@@ -4,7 +4,7 @@ using WebMart.Microservices.Repos.Interfaces;
 
 namespace WebMart.Microservices.Repos
 {
-    class SubCategoryRepo : ISubCategoryRepo
+    public class SubCategoryRepo : ISubCategoryRepo
     {
         private readonly CatalogDbContext _context;
 

@@ -1,9 +1,8 @@
-using System.Text.Json.Serialization;
 using CatalogService.Data;
-using CatalogService.Repos;
-using CatalogService.Repos.Interfaces;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using WebMart.Microservices.Data;
+using WebMart.Microservices.Repos;
+using WebMart.Microservices.Repos.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

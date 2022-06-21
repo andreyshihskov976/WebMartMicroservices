@@ -1,5 +1,6 @@
-using CatalogService.Models;
 using Microsoft.EntityFrameworkCore;
+using WebMart.Microservices.Data;
+using WebMart.Microservices.Models;
 
 namespace CatalogService.Data
 {

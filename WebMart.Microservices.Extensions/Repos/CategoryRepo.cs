@@ -1,10 +1,10 @@
-using CatalogService.Data;
-using CatalogService.Models;
-using CatalogService.Repos.Interfaces;
+using WebMart.Microservices.Models;
+using WebMart.Microservices.Data;
+using WebMart.Microservices.Repos.Interfaces;
 
-namespace CatalogService.Repos
+namespace WebMart.Microservices.Repos
 {
-    class CategoryRepo : ICategoryRepo
+    public class CategoryRepo : ICategoryRepo
     {
         private readonly CatalogDbContext _context;
 
