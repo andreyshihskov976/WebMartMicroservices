@@ -1,6 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using WebMart.Microservices.BasketService.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<BasketDbContext>(opt =>
+    opt.UseNpgsql(
+        builder.Configuration.GetValue<string>("DbConnection")
+    ));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

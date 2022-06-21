@@ -5,10 +5,7 @@ namespace WebMart.Microservices.CatalogService.Data
 {
     public class CatalogDbContext : DbContext
     {
-        public CatalogDbContext(DbContextOptions<CatalogDbContext> opt) : base(opt)
-        {
-            Database.EnsureCreated();
-        }
+        public CatalogDbContext(DbContextOptions<CatalogDbContext> opt) : base(opt){}
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<SubCategory> SubCategories { get; set; }
