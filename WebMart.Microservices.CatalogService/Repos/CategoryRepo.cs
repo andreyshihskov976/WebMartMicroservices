@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WebMart.Microservices.CatalogService.Data;
 using WebMart.Microservices.CatalogService.Models;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
@@ -31,21 +32,6 @@ namespace WebMart.Microservices.CatalogService.Repos
             _context.Categories.Remove(category);
         }
 
-        public ICollection<Category> GetAllCategories()
-        {
-            return _context.Categories.OrderBy(on => on.Name).ToList();
-        }
-
-        public Category GetCategoryById(Guid categoryId)
-        {
-            return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
-        }
-
-        public bool SaveChanges()
-        {
-            return (_context.SaveChanges() >= 0);
-        }
-
         public void UpdateCategory(Category category)
         {
             if (category == null)
@@ -53,6 +39,35 @@ namespace WebMart.Microservices.CatalogService.Repos
                 throw new ArgumentNullException(nameof(category));
             }
             _context.Categories.Update(category);
+        }
+
+        public ICollection<Category> GetAllCategories()
+        {
+            return _context.Categories.OrderBy(c => c.Name).ToList();
+        }
+
+        public ICollection<Category> GetAllCategoriesDetailed()
+        {
+            return _context.Categories
+                .Include(c => c.SubCategories)
+                .OrderBy(c => c.Name).ToList();
+        }
+
+        public Category GetCategoryById(Guid categoryId)
+        {
+            return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+        }
+
+        public Category GetCategoryByIdDetailed(Guid categoryId)
+        {
+            return _context.Categories
+                .Include(c => c.SubCategories)
+                .FirstOrDefault(c => c.Id == categoryId);
+        }
+
+        public bool SaveChanges()
+        {
+            return (_context.SaveChanges() >= 0);
         }
     }
 }

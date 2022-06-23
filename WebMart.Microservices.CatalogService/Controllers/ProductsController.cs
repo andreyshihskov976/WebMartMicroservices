@@ -1,7 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using WebMart.Microservices.CatalogService.AsyncDataServices;
+using WebMart.Microservices.Extensions.AsyncDataServices;
 using WebMart.Microservices.CatalogService.Models;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
 using WebMart.Microservices.Extensions.DTOs.Product;
@@ -53,6 +53,34 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(productsDtos);
         }
 
+        [HttpGet("[action]", Name = "GetDetailedProductsByPages")]
+        public ActionResult<ICollection<ProductDetailedReadDto>> GetDetailedProductsByPages([FromQuery] PageParams parameters)
+        {
+            Console.WriteLine("--> Getting SubСategories by pages...");
+
+            var products = _repository.GetAllProductsDetailed();
+
+            var productsDtos = PagedList<ProductDetailedReadDto>.ToPagedList(
+                _mapper.Map<ICollection<ProductDetailedReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
+        }
+
         [HttpGet("[action]", Name = "GetProductById")]
         public ActionResult<ProductReadDto> GetProductById([FromQuery] Guid id)
         {
@@ -62,6 +90,20 @@ namespace WebMart.Microservices.CatalogService.Controllers
             if (product != null)
             {
                 return Ok(_mapper.Map<ProductReadDto>(product));
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("[action]", Name = "GetDetailedProductById")]
+        public ActionResult<ProductDetailedReadDto> GetDetailedProductById([FromQuery] Guid id)
+        {
+            Console.WriteLine($"--> Getting Product with Id: {id}...");
+
+            var product = _repository.GetProductByIdDetailed(id);
+            if (product != null)
+            {
+                return Ok(_mapper.Map<ProductDetailedReadDto>(product));
             }
 
             return NotFound();
@@ -82,6 +124,40 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var productsDtos = PagedList<ProductReadDto>.ToPagedList(
                 _mapper.Map<ICollection<ProductReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
+        }
+
+        [HttpGet("[action]", Name = "GetDetailedProductsInCategory")]
+        public ActionResult<ICollection<ProductDetailedReadDto>> GetDetailedProductsInCategory(
+            [FromQuery] Guid categoryId, [FromQuery] PageParams parameters)
+        {
+            Console.WriteLine($"--> Getting Products by Category with Id: {categoryId} by pages...");
+
+            if(_repository.IsSubCategoryExists(categoryId))
+            {
+                return NotFound();
+            }
+
+            var products = _repository.GetProductsByCategoryIdDetailed(categoryId);
+
+            var productsDtos = PagedList<ProductDetailedReadDto>.ToPagedList(
+                _mapper.Map<ICollection<ProductDetailedReadDto>>(products),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -135,20 +211,39 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(productsDtos);
         }
 
-        [HttpGet("[action]", Name = "GetDetailedProductById")]
-        public ActionResult<Product> GetDetailedProductById([FromQuery] Guid id)
+        [HttpGet("[action]", Name = "GetDetailedProductsInSubCategory")]
+        public ActionResult<ICollection<ProductDetailedReadDto>> GetDetailedProductsInSubCategory(
+            [FromQuery] Guid subCategoryId, [FromQuery] PageParams parameters)
         {
-            Console.WriteLine($" Getting detailed Product with Id: {id}...");
+            Console.WriteLine($"--> Getting Products by SubCategory with Id: {subCategoryId} by pages...");
 
-            var product = _repository.GetProductByIdDetailed(id);
-            if (product != null)
+            if(!_repository.IsSubCategoryExists(subCategoryId))
             {
-                return Ok(product);
+                return NotFound();
             }
 
-            return NotFound();
-        }
+            var products = _repository.GetProductsByCategoryIdDetailed(subCategoryId);
 
+            var productsDtos = PagedList<ProductDetailedReadDto>.ToPagedList(
+                            _mapper.Map<ICollection<ProductDetailedReadDto>>(products),
+                            parameters.PageNumber,
+                            parameters.PageSize
+                        );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
+        }
 
         [HttpPost("[action]", Name = "CreateProductInSubCategory")]
         public ActionResult CreateProductInSubCategory([FromQuery] Guid subCategoryId, [FromBody] ProductCreateDto productCreateDto)
@@ -166,23 +261,13 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var productReadDto = _mapper.Map<ProductReadDto>(product);
 
-            //Send Async Message
-            try
-            {
-                var productPublishedDto = _mapper.Map<ProductPublishedDto>(productReadDto);
-                productPublishedDto.Event = EventType.ProductPublished;
-                _messageBusClient.PublishNewProduct(productPublishedDto);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"--> Could not send asynchronously: {ex.Message}");
-            }
+            SendAsyncMessage(productReadDto, EventType.ProductAdded);
 
             return CreatedAtRoute(
                 nameof(GetProductById),
                 new { Id = productReadDto.Id },
                 productReadDto
-                );
+            );
         }
 
         [HttpDelete("[action]", Name = "DeleteProduct")]
@@ -199,6 +284,10 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             _repository.DeleteProduct(product);
             _repository.SaveChanges();
+
+            var productReadDto = _mapper.Map<ProductReadDto>(product);
+
+            SendAsyncMessage(productReadDto, EventType.ProductDeleted);
 
             return NoContent();
         }
@@ -219,7 +308,24 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _repository.UpdateProduct(product);
             _repository.SaveChanges();
 
+            var productReadDto = _mapper.Map<ProductReadDto>(product);
+            SendAsyncMessage(productReadDto, EventType.ProductModified);
+
             return NoContent();
+        }
+
+        private void SendAsyncMessage(ProductReadDto productReadDto, EventType eventType)
+        {
+            try
+            {
+                var productPublishedDto = _mapper.Map<ProductPublishedDto>(productReadDto);
+                productPublishedDto.Event = eventType;
+                _messageBusClient.Publish(productPublishedDto);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"--> Could not send asynchronously: {ex.Message}");
+            }
         }
     }
 }

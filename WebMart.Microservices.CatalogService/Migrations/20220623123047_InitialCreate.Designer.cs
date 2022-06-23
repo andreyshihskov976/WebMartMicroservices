@@ -12,7 +12,7 @@ using WebMart.Microservices.CatalogService.Data;
 namespace WebMart.Microservices.CatalogService.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20220621104107_InitialCreate")]
+    [Migration("20220623123047_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

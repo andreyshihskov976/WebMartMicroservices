@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.BasketService.AsyncDataServices;
+using WebMart.Microservices.Extensions.AsyncDataServices;
 using WebMart.Microservices.BasketService.Data;
 using WebMart.Microservices.BasketService.EventProcessing;
 using WebMart.Microservices.BasketService.Repos;
@@ -16,10 +16,10 @@ builder.Services.AddDbContext<BasketDbContext>(opt =>
 
 builder.Services.AddScoped<IBasketRepo, BasketRepo>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
-builder.Services.AddScoped<ITakenProductRepo, TakenProductRepo>();
 
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddHostedService<MessageBusSubscriber>();
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

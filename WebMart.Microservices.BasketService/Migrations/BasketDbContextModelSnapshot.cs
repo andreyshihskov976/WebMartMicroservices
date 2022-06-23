@@ -22,14 +22,34 @@ namespace WebMart.Microservices.BasketService.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BasketProduct", b =>
+                {
+                    b.Property<Guid>("BasketsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("BasketsId", "ProductsId");
+
+                    b.HasIndex("ProductsId");
+
+                    b.ToTable("BasketProduct");
+                });
+
             modelBuilder.Entity("WebMart.Microservices.BasketService.Models.Basket", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsOrdered")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.HasKey("Id");
 
@@ -41,9 +61,6 @@ namespace WebMart.Microservices.BasketService.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("ExternalId")
                         .HasColumnType("uuid");
@@ -60,54 +77,19 @@ namespace WebMart.Microservices.BasketService.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("WebMart.Microservices.BasketService.Models.TakenProduct", b =>
+            modelBuilder.Entity("BasketProduct", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BasketId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BasketId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("TakenProducts");
-                });
-
-            modelBuilder.Entity("WebMart.Microservices.BasketService.Models.TakenProduct", b =>
-                {
-                    b.HasOne("WebMart.Microservices.BasketService.Models.Basket", "Basket")
-                        .WithMany("TakenProducts")
-                        .HasForeignKey("BasketId")
+                    b.HasOne("WebMart.Microservices.BasketService.Models.Basket", null)
+                        .WithMany()
+                        .HasForeignKey("BasketsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebMart.Microservices.BasketService.Models.Product", "Product")
-                        .WithMany("TakenProducts")
-                        .HasForeignKey("ProductId")
+                    b.HasOne("WebMart.Microservices.BasketService.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Basket");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("WebMart.Microservices.BasketService.Models.Basket", b =>
-                {
-                    b.Navigation("TakenProducts");
-                });
-
-            modelBuilder.Entity("WebMart.Microservices.BasketService.Models.Product", b =>
-                {
-                    b.Navigation("TakenProducts");
                 });
 #pragma warning restore 612, 618
         }

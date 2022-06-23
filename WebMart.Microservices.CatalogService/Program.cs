@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.CatalogService.AsyncDataServices;
+using WebMart.Microservices.Extensions.AsyncDataServices;
 using WebMart.Microservices.CatalogService.Data;
 using WebMart.Microservices.CatalogService.Repos;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;

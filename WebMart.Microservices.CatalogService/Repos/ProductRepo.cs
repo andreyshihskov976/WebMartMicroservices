@@ -33,9 +33,26 @@ namespace WebMart.Microservices.CatalogService.Repos
             _context.Products.Remove(product);
         }
 
+        public void UpdateProduct(Product product)
+        {
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+            _context.Products.Update(product);
+        }
+
         public ICollection<Product> GetAllProducts()
         {
             return _context.Products.OrderBy(on => on.Name).ToList();
+        }
+
+        public ICollection<Product> GetAllProductsDetailed()
+        {
+            return _context.Products
+                .Include(p => p.SubCategory)
+                .ThenInclude(sc => sc.Category)
+                .OrderBy(p => p.Name).ToList();
         }
 
         public Product GetProductById(Guid productId)
@@ -43,14 +60,44 @@ namespace WebMart.Microservices.CatalogService.Repos
             return _context.Products.FirstOrDefault(p => p.Id == productId);
         }
 
+        public Product GetProductByIdDetailed(Guid productId)
+        {
+            return _context.Products
+                .Include(p => p.SubCategory)
+                .ThenInclude(sc => sc.Category)
+                .FirstOrDefault(p => p.Id == productId);
+        }
+
         public ICollection<Product> GetProductsByCategoryId(Guid categoryId)
         {
-            return _context.Products.Where(p => p.SubCategory.CategoryId == categoryId).OrderBy(on => on.Name).ToList();
+            return _context.Products
+                .Where(p => p.SubCategory.CategoryId == categoryId)
+                .OrderBy(p => p.Name).ToList();
+        }
+
+        public ICollection<Product> GetProductsByCategoryIdDetailed(Guid categoryId)
+        {
+            return _context.Products
+                .Include(p => p.SubCategory)
+                .ThenInclude(sc => sc.Category)
+                .Where(p => p.SubCategory.CategoryId == categoryId)
+                .OrderBy(p => p.Name).ToList();
         }
 
         public ICollection<Product> GetProductsBySubCategoryId(Guid subCategoryId)
         {
-            return _context.Products.Where(p => p.SubCategoryId == subCategoryId).OrderBy(on => on.Name).ToList();
+            return _context.Products
+                .Where(p => p.SubCategoryId == subCategoryId)
+                .OrderBy(p => p.Name).ToList();
+        }
+
+        public ICollection<Product> GetProductsBySubCategoryIdDetailed(Guid subCategoryId)
+        {
+            return _context.Products
+                .Include(p => p.SubCategory)
+                .ThenInclude(sc => sc.Category)
+                .Where(p => p.SubCategoryId == subCategoryId)
+                .OrderBy(p => p.Name).ToList();
         }
 
         public bool IsSubCategoryExists(Guid subCategoryId)
@@ -66,23 +113,6 @@ namespace WebMart.Microservices.CatalogService.Repos
         public bool SaveChanges()
         {
             return (_context.SaveChanges() >= 0);
-        }
-
-        public void UpdateProduct(Product product)
-        {
-            if (product == null)
-            {
-                throw new ArgumentNullException(nameof(product));
-            }
-            _context.Products.Update(product);
-        }
-
-        public Product GetProductByIdDetailed(Guid productId)
-        {
-            return _context.Products
-                .Include(p => p.SubCategory)
-                .ThenInclude(p => p.Category)
-                .FirstOrDefault(p => p.Id == productId);
         }
     }
 }

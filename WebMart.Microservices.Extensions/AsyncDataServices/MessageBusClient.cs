@@ -1,9 +1,9 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Configuration;
+using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using WebMart.Microservices.Extensions.DTOs.Product;
 
-namespace WebMart.Microservices.CatalogService.AsyncDataServices
+namespace WebMart.Microservices.Extensions.AsyncDataServices
 {
     public class MessageBusClient : IMessageBusClient
     {
@@ -24,7 +24,7 @@ namespace WebMart.Microservices.CatalogService.AsyncDataServices
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
 
-                _channel.ExchangeDeclare(exchange: "trigger", type: ExchangeType.Fanout);
+                _channel.ExchangeDeclare(exchange: _config["RabbitMQPublishExchange"], type: ExchangeType.Fanout);
 
                 _connection.ConnectionShutdown += RabbitMQ_ConnectionShutdown;
                 Console.WriteLine("--> Connected to the Message Bus");
@@ -35,9 +35,9 @@ namespace WebMart.Microservices.CatalogService.AsyncDataServices
             }
         }
 
-        public void PublishNewProduct(ProductPublishedDto productPublishedDto)
+        public void Publish(object publishedDto)
         {
-            var message = JsonSerializer.Serialize(productPublishedDto);
+            var message = JsonSerializer.Serialize(publishedDto);
 
             if (_connection.IsOpen)
             {
@@ -50,12 +50,17 @@ namespace WebMart.Microservices.CatalogService.AsyncDataServices
             }
         }
 
+        private void RabbitMQ_ConnectionShutdown(object sender, ShutdownEventArgs e)
+        {
+            Console.WriteLine("--> RabbitMQ Connection shutdown");
+        }
+
         private void SendMessage(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
 
-            _channel.BasicPublish(exchange: "trigger",
-                routingKey: "",
+            _channel.BasicPublish(exchange: _config["RabbitMQPublishExchange"],
+                routingKey: "WebMart.Microservices",
                 basicProperties: null,
                 body: body);
             Console.WriteLine($"--> We have sent {message}");
@@ -69,11 +74,6 @@ namespace WebMart.Microservices.CatalogService.AsyncDataServices
                 _channel.Close();
                 _connection.Close();
             }
-        }
-
-        private void RabbitMQ_ConnectionShutdown(object sender, ShutdownEventArgs e)
-        {
-            Console.WriteLine("--> RabbitMQ Connection shutdown");
         }
     }
 }

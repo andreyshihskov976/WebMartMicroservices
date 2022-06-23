@@ -14,11 +14,9 @@ namespace WebMart.Microservices.BasketService.Models
         [Required]
         public string Name { get; set; }
 
-        public string Description { get; set; }
-
         [Required]
         public double Price { get; set; }
 
-        public List<TakenProduct> TakenProducts { get; set; }
+        public List<Basket> Baskets { get; set; }
     }
 }

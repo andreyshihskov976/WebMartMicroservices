@@ -2,8 +2,10 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
-namespace WebMart.Microservices.BasketService.AsyncDataServices
+namespace WebMart.Microservices.Extensions.AsyncDataServices
 {
     public class MessageBusSubscriber : BackgroundService
     {
@@ -30,11 +32,11 @@ namespace WebMart.Microservices.BasketService.AsyncDataServices
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-            _channel.ExchangeDeclare(exchange: "trigger", type: ExchangeType.Fanout);
+            _channel.ExchangeDeclare(exchange: _config["RabbitMQSubscribeExchange"], type: ExchangeType.Fanout);
             _queueName = _channel.QueueDeclare().QueueName;
             _channel.QueueBind(queue: _queueName,
-                exchange: "trigger",
-                routingKey: "");
+                exchange: _config["RabbitMQSubscribeExchange"],
+                routingKey: "WebMart.Microservices");
 
             Console.WriteLine("--> Listening on Message Bus...");
 

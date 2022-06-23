@@ -31,9 +31,13 @@ namespace WebMart.Microservices.BasketService.Repos
             _context.Products.Remove(product);
         }
 
-        public bool ExternalProductExists(Guid externalProductId)
+        public void UpdateProduct(Product product)
         {
-            return _context.Products.Any(p => p.ExternalId == externalProductId);
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+            _context.Products.Update(product);
         }
 
         public ICollection<Product> GetAllProducts()
@@ -46,23 +50,24 @@ namespace WebMart.Microservices.BasketService.Repos
             return _context.Products.FirstOrDefault(p => p.Id == productId);
         }
 
+        public Product GetProductByExternalId(Guid externalProductId)
+        {
+            return _context.Products.FirstOrDefault(p => p.ExternalId == externalProductId);
+        }
+
         public bool ProductExists(Guid productId)
         {
             return _context.Products.Any(p => p.Id == productId);
         }
 
+        public bool ExternalProductExists(Guid externalProductId)
+        {
+            return _context.Products.Any(p => p.ExternalId == externalProductId);
+        }
+
         public bool SaveChanges()
         {
             return (_context.SaveChanges() >= 0);
-        }
-
-        public void UpdateProduct(Product product)
-        {
-            if (product == null)
-            {
-                throw new ArgumentNullException(nameof(product));
-            }
-            _context.Products.Update(product);
         }
     }
 }

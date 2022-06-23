@@ -2,9 +2,11 @@ namespace WebMart.Microservices.Extensions.EventProcessing
 {
     public enum EventType
     {
-        ProductPublished,
+        ProductAdded,
         ProductDeleted,
         ProductModified,
-        Undetremined
+        Undetremined,
+        BasketAdded,
+        BasketDeleted
     }
 }

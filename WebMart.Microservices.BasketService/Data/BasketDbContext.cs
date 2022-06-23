@@ -9,33 +9,23 @@ namespace WebMart.Microservices.BasketService.Data
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Basket> Baskets { get; set; }
-        public DbSet<TakenProduct> TakenProducts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Link for Product -> TakenProduct
             modelBuilder
                 .Entity<Product>()
-                .HasMany(p => p.TakenProducts)
-                .WithOne(p => p.Product)
-                .HasForeignKey(p => p.ProductId);
-            modelBuilder
-                .Entity<TakenProduct>()
-                .HasOne(p => p.Product)
-                .WithMany(p => p.TakenProducts)
-                .HasForeignKey(p => p.ProductId);
-
-            //Link for TakenProduct -> Basket
+                .HasMany(p => p.Baskets)
+                .WithMany(p => p.Products);
             modelBuilder
                 .Entity<Basket>()
-                .HasMany(p => p.TakenProducts)
-                .WithOne(p => p.Basket)
-                .HasForeignKey(p => p.BasketId);
+                .HasMany(p => p.Products)
+                .WithMany(p => p.Baskets);
+
             modelBuilder
-                .Entity<TakenProduct>()
-                .HasOne(p => p.Basket)
-                .WithMany(p => p.TakenProducts)
-                .HasForeignKey(p => p.BasketId);
+                .Entity<Basket>()
+                .Property(b => b.IsOrdered)
+                .HasDefaultValue(false);
         }
     }
 }

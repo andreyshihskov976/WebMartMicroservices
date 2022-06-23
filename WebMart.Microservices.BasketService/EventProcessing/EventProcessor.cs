@@ -25,14 +25,14 @@ namespace WebMart.Microservices.BasketService.EventProcessing
 
             switch (eventType)
             {
-                case EventType.ProductPublished:
+                case EventType.ProductAdded:
                     AddProduct(message);
                     break;
                 case EventType.ProductModified:
-                    // UpdateProduct(message);
+                    UpdateProduct(message);
                     break;
                 case EventType.ProductDeleted:
-                    // DeleteProduct(message);
+                    DeleteProduct(message);
                     break;
                 default:
                     Console.WriteLine($"There is no option for {eventType} event");
@@ -57,11 +57,11 @@ namespace WebMart.Microservices.BasketService.EventProcessing
             {
                 var repo = scope.ServiceProvider.GetRequiredService<IProductRepo>();
 
-                var platformPublishedDto = JsonSerializer.Deserialize<ProductPublishedDto>(productPublishedMessage);
+                var productPublishedDto = JsonSerializer.Deserialize<ProductPublishedDto>(productPublishedMessage);
 
                 try
                 {
-                    var product = _mapper.Map<Product>(platformPublishedDto);
+                    var product = _mapper.Map<Product>(productPublishedDto);
                     if (!repo.ExternalProductExists(product.ExternalId))
                     {
                         repo.CreateProduct(product);
@@ -79,5 +79,65 @@ namespace WebMart.Microservices.BasketService.EventProcessing
                 }
             }
         }
+
+        private void DeleteProduct(string productPublishedMessage)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var repo = scope.ServiceProvider.GetRequiredService<IProductRepo>();
+
+                var productPublishedDto = JsonSerializer.Deserialize<ProductPublishedDto>(productPublishedMessage);
+
+                try
+                {
+                    var product = repo.GetProductByExternalId(productPublishedDto.Id);
+                    if (product != null)
+                    {
+                        repo.DeleteProduct(product);
+                        repo.SaveChanges();
+                        Console.WriteLine("--> Product deleted!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("--> Product already not exists...");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"--> Could not delete Product from DB: {ex.Message}");
+                }
+            }
+        }
+
+        private void UpdateProduct(string productPublishedMessage)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var repo = scope.ServiceProvider.GetRequiredService<IProductRepo>();
+
+                var productPublishedDto = JsonSerializer.Deserialize<ProductPublishedDto>(productPublishedMessage);
+
+                try
+                {
+                    var productInRepo = repo.GetProductByExternalId(productPublishedDto.Id);
+                    if (productInRepo != null)
+                    {
+                        _mapper.Map(productPublishedDto, productInRepo);
+                        repo.UpdateProduct(productInRepo);
+                        repo.SaveChanges();
+                        Console.WriteLine("--> Product updated!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("--> Product does not exists...");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"--> Could not update Product in DB: {ex.Message}");
+                }
+            }
+        }
+
     }
 }

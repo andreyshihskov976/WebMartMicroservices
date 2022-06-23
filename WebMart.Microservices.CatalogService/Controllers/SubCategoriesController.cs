@@ -28,24 +28,51 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var subCategories = _repository.GetAllSubCategories();
 
-            var subCategoriesDtos = PagedList<SubCategoryReadDto>.ToPagedList(
+            var subCategoriesDtosPaged = PagedList<SubCategoryReadDto>.ToPagedList(
                 _mapper.Map<ICollection<SubCategoryReadDto>>(subCategories),
                 parameters.PageNumber,
                 parameters.PageSize
             );
 
             var meta = new{
-                subCategoriesDtos.TotalCount,
-                subCategoriesDtos.PageSize,
-                subCategoriesDtos.CurrentPage,
-                subCategoriesDtos.TotalPages,
-                subCategoriesDtos.HasNext,
-                subCategoriesDtos.HasPrevious
+                subCategoriesDtosPaged.TotalCount,
+                subCategoriesDtosPaged.PageSize,
+                subCategoriesDtosPaged.CurrentPage,
+                subCategoriesDtosPaged.TotalPages,
+                subCategoriesDtosPaged.HasNext,
+                subCategoriesDtosPaged.HasPrevious
             };
 
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
 
-	        return Ok(subCategoriesDtos);
+	        return Ok(subCategoriesDtosPaged);
+        }
+
+        [HttpGet("[action]", Name = "GetDetailedSubCategoriesByPages")]
+        public ActionResult<ICollection<SubCategoryDetailedReadDto>> GetDetailedSubCategoriesByPages([FromQuery] PageParams parameters)
+        {
+            Console.WriteLine("--> Getting SubСategories by pages...");
+
+            var subCategories = _repository.GetAllSubCategoriesDetailed();
+
+            var subCategoriesDtosPaged = PagedList<SubCategoryDetailedReadDto>.ToPagedList(
+                _mapper.Map<ICollection<SubCategoryDetailedReadDto>>(subCategories),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new{
+                subCategoriesDtosPaged.TotalCount,
+                subCategoriesDtosPaged.PageSize,
+                subCategoriesDtosPaged.CurrentPage,
+                subCategoriesDtosPaged.TotalPages,
+                subCategoriesDtosPaged.HasNext,
+                subCategoriesDtosPaged.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+	        return Ok(subCategoriesDtosPaged);
         }
 
         [HttpGet("[action]", Name = "GetSubCategoryById")]
@@ -57,6 +84,20 @@ namespace WebMart.Microservices.CatalogService.Controllers
             if (subCategory != null)
             {
                 return Ok(_mapper.Map<SubCategoryReadDto>(subCategory));
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("[action]", Name = "GetDetailedSubCategoryById")]
+        public ActionResult<SubCategoryDetailedReadDto> GetDetailedSubCategoryById([FromQuery] Guid id)
+        {
+            Console.WriteLine($"--> Getting SubCategory by Id: {id}...");
+
+            var subCategory = _repository.GetSubCategoryByIdDetailed(id);
+            if (subCategory != null)
+            {
+                return Ok(_mapper.Map<SubCategoryDetailedReadDto>(subCategory));
             }
 
             return NotFound();
@@ -75,24 +116,57 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var subCategories = _repository.GetSubCategoriesByCategoryId(categoryId);
 
-            var subCategoriesDtos = PagedList<SubCategoryReadDto>.ToPagedList(
+            var subCategoriesDtosPaged = PagedList<SubCategoryReadDto>.ToPagedList(
                 _mapper.Map<ICollection<SubCategoryReadDto>>(subCategories),
                 parameters.PageNumber,
                 parameters.PageSize
             );
 
             var meta = new{
-                subCategoriesDtos.TotalCount,
-                subCategoriesDtos.PageSize,
-                subCategoriesDtos.CurrentPage,
-                subCategoriesDtos.TotalPages,
-                subCategoriesDtos.HasNext,
-                subCategoriesDtos.HasPrevious
+                subCategoriesDtosPaged.TotalCount,
+                subCategoriesDtosPaged.PageSize,
+                subCategoriesDtosPaged.CurrentPage,
+                subCategoriesDtosPaged.TotalPages,
+                subCategoriesDtosPaged.HasNext,
+                subCategoriesDtosPaged.HasPrevious
             };
 
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
 
-            return Ok(subCategoriesDtos);
+            return Ok(subCategoriesDtosPaged);
+        }
+
+        [HttpGet("[action]", Name = "GetDetailedSubCategoriesInCategory")]
+        public ActionResult<ICollection<SubCategoryDetailedReadDto>> GetDetailedSubCategoriesInCategory(
+            [FromQuery] Guid categoryId, [FromQuery] PageParams parameters)
+        {
+            Console.WriteLine($"--> Getting SubCategories by Category with Id: {categoryId} by pages...");
+
+            if(!_repository.IsCategoryExists(categoryId))
+            {
+                return NotFound();
+            }
+
+            var subCategories = _repository.GetSubCategoriesByCategoryIdDetailed(categoryId);
+
+            var subCategoriesDtosPaged = PagedList<SubCategoryDetailedReadDto>.ToPagedList(
+                _mapper.Map<ICollection<SubCategoryDetailedReadDto>>(subCategories),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new{
+                subCategoriesDtosPaged.TotalCount,
+                subCategoriesDtosPaged.PageSize,
+                subCategoriesDtosPaged.CurrentPage,
+                subCategoriesDtosPaged.TotalPages,
+                subCategoriesDtosPaged.HasNext,
+                subCategoriesDtosPaged.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(subCategoriesDtosPaged);
         }
 
         [HttpPost("[action]", Name = "CreateSubCategoryInCategory")]
