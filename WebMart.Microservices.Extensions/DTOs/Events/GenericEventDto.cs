@@ -1,4 +1,4 @@
-using WebMart.Microservices.Extensions.EventProcessing;
+using WebMart.Microservices.Extensions.Enums;
 
 namespace WebMart.Microservices.Extensions.DTOs.Events
 {

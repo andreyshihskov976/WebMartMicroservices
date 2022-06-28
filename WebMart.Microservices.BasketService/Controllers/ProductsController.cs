@@ -48,7 +48,7 @@ namespace WebMart.Microservices.BasketService.Controllers
         {
             Console.WriteLine($"--> Getting Product with external id: {externalId}...");
 
-            var product = _repository.GetProductByExternalId(externalId);
+            var product = _repository.GetProductById(externalId);
 
             if(product != null)
             {

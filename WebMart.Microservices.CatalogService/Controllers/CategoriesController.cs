@@ -21,7 +21,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("[action]", Name = "GetTestString")]
+        [HttpPost("[action]", Name = "GetTestString")]
         public ActionResult<string> GetTestString()
         {
             return Ok("--> Message from Catalog API");

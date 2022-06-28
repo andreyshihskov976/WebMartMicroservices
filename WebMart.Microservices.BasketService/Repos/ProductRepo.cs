@@ -50,19 +50,9 @@ namespace WebMart.Microservices.BasketService.Repos
             return _context.Products.FirstOrDefault(p => p.Id == productId);
         }
 
-        public Product GetProductByExternalId(Guid externalProductId)
-        {
-            return _context.Products.FirstOrDefault(p => p.ExternalId == externalProductId);
-        }
-
         public bool ProductExists(Guid productId)
         {
             return _context.Products.Any(p => p.Id == productId);
-        }
-
-        public bool ExternalProductExists(Guid externalProductId)
-        {
-            return _context.Products.Any(p => p.ExternalId == externalProductId);
         }
 
         public bool SaveChanges()

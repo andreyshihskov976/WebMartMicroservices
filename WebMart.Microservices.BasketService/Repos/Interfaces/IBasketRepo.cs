@@ -14,7 +14,8 @@ namespace WebMart.Microservices.BasketService.Repos.Interfaces
         void CreateBasket(Basket basket);
         void DeleteBasket(Basket basket);
         void UpdateBasket(Basket basket);
-        bool ExternalProductExists(Guid externalProductId);
-        Product GetProductByExternalId(Guid externalProductId);
+
+        Product GetProductById(Guid productId);
+        void CreateMissingProduct(Product product);
     }
 }

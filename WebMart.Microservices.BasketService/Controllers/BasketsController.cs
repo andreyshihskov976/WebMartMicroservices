@@ -5,6 +5,10 @@ using WebMart.Microservices.BasketService.Repos.Interfaces;
 using WebMart.Microservices.Extensions.DTOs.Basket;
 using WebMart.Microservices.Extensions.EventProcessing;
 using WebMart.Microservices.Extensions.AsyncDataServices;
+using WebMart.Microservices.Extensions.SyncDataServices;
+using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Microservices.Extensions.Enums;
+using Newtonsoft.Json;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
@@ -15,12 +19,15 @@ namespace WebMart.Microservices.BasketService.Controllers
         private readonly IBasketRepo _repository;
         private readonly IMapper _mapper;
         private readonly IMessageBusClient _messageBusClient;
+        private readonly IHttpDataService _httpDataService;
 
-        public BasketsController(IBasketRepo repository, IMapper mapper, IMessageBusClient messageBusClient)
+        public BasketsController(IBasketRepo repository, IMapper mapper,
+        IMessageBusClient messageBusClient, IHttpDataService httpDataService)
         {
             _repository = repository;
             _mapper = mapper;
             _messageBusClient = messageBusClient;
+            _httpDataService = httpDataService;
         }
 
         [HttpGet("[action]", Name = "GetAllBaskets")]
@@ -63,11 +70,26 @@ namespace WebMart.Microservices.BasketService.Controllers
         {
             Console.WriteLine($"--> Gettng Basket with id: {id}...");
 
-            var basket = _repository.GetBasketById(id);
+            var basket = _repository.GetBasketByIdDetailed(id);
 
             if (basket != null)
             {
                 return Ok(_mapper.Map<BasketDetailedReadDto>(basket));
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<BasketPublishedDto> GetPublishedBasketById(Guid id)
+        {
+            Console.WriteLine($"--> Gettng published Basket with id: {id}...");
+
+            var basket = _repository.GetBasketById(id);
+
+            if (basket != null)
+            {
+                return Ok(_mapper.Map<BasketPublishedDto>(basket));
             }
 
             return NotFound();
@@ -142,6 +164,11 @@ namespace WebMart.Microservices.BasketService.Controllers
                 return NotFound();
             }
 
+            if (basket.IsOrdered)
+            {
+                return BadRequest();
+            }
+
             _repository.DeleteBasket(basket);
             _repository.SaveChanges();
 
@@ -153,23 +180,42 @@ namespace WebMart.Microservices.BasketService.Controllers
         }
 
         [HttpPost("[action]", Name = "AddProductToBasket")]
-        public ActionResult AddProductToBasket([FromQuery] Guid basketId, [FromQuery] Guid productId)
+        public async Task<ActionResult> AddProductToBasketAsync([FromQuery] Guid basketId, [FromQuery] Guid productId)
         {
             Console.WriteLine($"--> Adding Product with id: {basketId} in Basket with id: {productId}");
 
             var basket = _repository.GetBasketById(basketId);
 
-            if(basket == null)
+            if (basket == null)
             {
                 return NotFound();
             }
 
-            var product = _repository.GetProductByExternalId(productId);
-
-            if(product == null)
+            if (basket.IsOrdered)
             {
-                //Get product from CatalogService
-                return NotFound();
+                return BadRequest();
+            }
+
+            var product = _repository.GetProductById(productId);
+
+            if (product == null)
+            {
+                //Adding missing Product
+                var productPublishedDto = await GetProductFromCatalogServiceAsync(productId);
+                if (productPublishedDto != null)
+                {
+                    product = _mapper.Map<Product>(productPublishedDto);
+                    _repository.CreateMissingProduct(product);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+
+            if (basket.Products == null)
+            {
+                basket.Products = new List<Product>();
             }
 
             basket.Products.Add(product);
@@ -187,18 +233,17 @@ namespace WebMart.Microservices.BasketService.Controllers
 
             var basket = _repository.GetBasketById(basketId);
 
-            if(basket == null)
+            if (basket == null)
             {
                 return NotFound();
             }
 
-            var product = _repository.GetProductByExternalId(productId);
-
-            if(product == null)
+            if (basket.IsOrdered)
             {
-                //Get product from CatalogService
-                return NotFound();
+                return BadRequest();
             }
+
+            var product = _repository.GetProductById(productId);
 
             basket.Products.Remove(product);
 
@@ -221,6 +266,28 @@ namespace WebMart.Microservices.BasketService.Controllers
             {
                 Console.WriteLine($"--> Could not send asynchronously: {ex.Message}");
             }
+        }
+
+        private async Task<ProductPublishedDto> GetProductFromCatalogServiceAsync(Guid productId)
+        {
+            try
+            {
+                Console.WriteLine("--> Sending request to the CatalogService");
+                var response = await _httpDataService.SendGetRequest
+                (
+                    $"https://localhost:5129/api/Products/GetPublishedProductById?id={productId}"
+                );
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<ProductPublishedDto>(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"--> Could not send synchronously: {ex.Message}");
+            }
+            return null;
         }
     }
 }

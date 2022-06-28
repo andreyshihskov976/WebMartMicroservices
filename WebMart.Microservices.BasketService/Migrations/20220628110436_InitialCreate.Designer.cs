@@ -12,7 +12,7 @@ using WebMart.Microservices.BasketService.Data;
 namespace WebMart.Microservices.BasketService.Migrations
 {
     [DbContext(typeof(BasketDbContext))]
-    [Migration("20220623092230_InitialCreate")]
+    [Migration("20220628110436_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,9 +62,6 @@ namespace WebMart.Microservices.BasketService.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ExternalId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")

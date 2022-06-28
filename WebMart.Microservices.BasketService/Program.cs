@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using WebMart.Microservices.Extensions.SyncDataServices;
 using WebMart.Microservices.Extensions.AsyncDataServices;
 using WebMart.Microservices.BasketService.Data;
 using WebMart.Microservices.BasketService.EventProcessing;
 using WebMart.Microservices.BasketService.Repos;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
 using WebMart.Microservices.Extensions.EventProcessing;
+using WebMart.Microservices.BasketService.Models;
+using WebMart.Microservices.Extensions.DTOs.Product;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,12 @@ builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddHostedService<MessageBusSubscriber>();
 builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
+
+builder.Services.AddHttpClient<IHttpDataService, HttpDataService>()
+    .ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
+        {
+           ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+        });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

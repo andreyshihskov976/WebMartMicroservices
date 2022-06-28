@@ -18,6 +18,6 @@ namespace WebMart.Microservices.CatalogService.Models
 
         public Category Category { get; set; }
 
-        public ICollection<Product> Products { get; set; }
+        public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

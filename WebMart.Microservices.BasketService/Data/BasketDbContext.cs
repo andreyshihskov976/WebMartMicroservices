@@ -12,7 +12,7 @@ namespace WebMart.Microservices.BasketService.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //Link for Product -> TakenProduct
+            //Link for Product -> Basket
             modelBuilder
                 .Entity<Product>()
                 .HasMany(p => p.Baskets)

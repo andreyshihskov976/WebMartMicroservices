@@ -9,14 +9,11 @@ namespace WebMart.Microservices.BasketService.Models
         public Guid Id { get; set; }
 
         [Required]
-        public Guid ExternalId { get; set; }
-
-        [Required]
         public string Name { get; set; }
 
         [Required]
         public double Price { get; set; }
 
-        public List<Basket> Baskets { get; set; }
+        public ICollection<Basket> Baskets { get; set; } = new List<Basket>();
     }
 }

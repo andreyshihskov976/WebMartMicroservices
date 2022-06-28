@@ -20,6 +20,7 @@ namespace WebMart.Microservices.BasketService.Repos
             {
                 throw new ArgumentNullException(nameof(basket));
             }
+            basket.Products = new List<Product>();
             _context.Baskets.Add(basket);
         }
 
@@ -83,19 +84,23 @@ namespace WebMart.Microservices.BasketService.Repos
             return _context.Baskets.Any(b => b.Id == basketId);
         }
 
-        public bool ExternalProductExists(Guid externalProductId)
-        {
-            return _context.Products.Any(p => p.ExternalId == externalProductId);
-        }
-
-        public Product GetProductByExternalId(Guid externalProductId)
-        {
-            return _context.Products.FirstOrDefault(p => p.ExternalId == externalProductId);
-        }
-
         public bool SaveChanges()
         {
             return (_context.SaveChanges() >= 0);
+        }
+
+        public Product GetProductById(Guid productId)
+        {
+            return _context.Products.FirstOrDefault(p => p.Id == productId);
+        }
+
+        public void CreateMissingProduct(Product product)
+        {
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product));
+            }
+            _context.Products.Add(product);
         }
     }
 }

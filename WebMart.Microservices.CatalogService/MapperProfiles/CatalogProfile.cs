@@ -24,6 +24,7 @@ namespace WebMart.Microservices.CatalogService.MapperProfiles
             CreateMap<Product, ProductReadDto>();
             CreateMap<ProductCreateDto, Product>();
             CreateMap<ProductReadDto, ProductPublishedDto>();
+            CreateMap<Product, ProductPublishedDto>();
             CreateMap<Product, ProductDetailedReadDto>()
                 .ForMember(dest => dest.SubCategory, opt => opt.MapFrom(src => src.SubCategory));
         }

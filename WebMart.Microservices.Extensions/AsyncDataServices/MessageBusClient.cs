@@ -29,9 +29,9 @@ namespace WebMart.Microservices.Extensions.AsyncDataServices
                 _connection.ConnectionShutdown += RabbitMQ_ConnectionShutdown;
                 Console.WriteLine("--> Connected to the Message Bus");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"--> Could not connect to the Message Bu: {ex.Message}");
+                Console.WriteLine($"--> Could not connect to the Message Bus: {ex.Message}");
             }
         }
 

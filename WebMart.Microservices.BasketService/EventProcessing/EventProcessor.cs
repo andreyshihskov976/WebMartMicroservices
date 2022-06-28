@@ -4,7 +4,9 @@ using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
 using WebMart.Microservices.Extensions.DTOs.Events;
 using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Microservices.Extensions.DTOs.Order;
 using WebMart.Microservices.Extensions.EventProcessing;
+using WebMart.Microservices.Extensions.Enums;
 
 namespace WebMart.Microservices.BasketService.EventProcessing
 {
@@ -34,6 +36,12 @@ namespace WebMart.Microservices.BasketService.EventProcessing
                 case EventType.ProductDeleted:
                     DeleteProduct(message);
                     break;
+                case EventType.OrderAdded:
+                    UpdateBasket(message, isOrdered: true);
+                    break;
+                case EventType.OrderDeleted:
+                    UpdateBasket(message, isOrdered: false);
+                    break;
                 default:
                     Console.WriteLine($"There is no option for {eventType} event");
                     break;
@@ -62,7 +70,7 @@ namespace WebMart.Microservices.BasketService.EventProcessing
                 try
                 {
                     var product = _mapper.Map<Product>(productPublishedDto);
-                    if (!repo.ExternalProductExists(product.ExternalId))
+                    if (!repo.ProductExists(product.Id))
                     {
                         repo.CreateProduct(product);
                         repo.SaveChanges();
@@ -90,7 +98,7 @@ namespace WebMart.Microservices.BasketService.EventProcessing
 
                 try
                 {
-                    var product = repo.GetProductByExternalId(productPublishedDto.Id);
+                    var product = repo.GetProductById(productPublishedDto.Id);
                     if (product != null)
                     {
                         repo.DeleteProduct(product);
@@ -119,7 +127,7 @@ namespace WebMart.Microservices.BasketService.EventProcessing
 
                 try
                 {
-                    var productInRepo = repo.GetProductByExternalId(productPublishedDto.Id);
+                    var productInRepo = repo.GetProductById(productPublishedDto.Id);
                     if (productInRepo != null)
                     {
                         _mapper.Map(productPublishedDto, productInRepo);
@@ -139,5 +147,34 @@ namespace WebMart.Microservices.BasketService.EventProcessing
             }
         }
 
+        private void UpdateBasket(string orderPublishedMessage, bool isOrdered)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var repo = scope.ServiceProvider.GetRequiredService<IBasketRepo>();
+
+                var orderPublishedDto = JsonSerializer.Deserialize<OrderPublishedDto>(orderPublishedMessage);
+
+                try
+                {
+                    var basketInRepo = repo.GetBasketById(orderPublishedDto.BasketId);
+                    if (basketInRepo != null)
+                    {
+                        basketInRepo.IsOrdered = isOrdered;
+                        repo.UpdateBasket(basketInRepo);
+                        repo.SaveChanges();
+                        Console.WriteLine("--> Basket updated!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("--> Basket does not exists...");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"--> Could not update Basket in DB: {ex.Message}");
+                }
+            }
+        }
     }
 }

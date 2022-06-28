@@ -14,6 +14,6 @@ namespace WebMart.Microservices.BasketService.Models
         [Required]
         public bool IsOrdered {get; set;}
 
-        public List<Product> Products { get; set; }
+        public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }
