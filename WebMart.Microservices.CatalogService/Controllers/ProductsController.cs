@@ -25,8 +25,8 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _messageBusClient = messageBusClient;
         }
 
-        [HttpGet("[action]", Name = "GetProductsByPages")]
-        public ActionResult<ICollection<ProductReadDto>> GetProductsByPages([FromQuery] PageParams parameters)
+        [HttpGet("[action]", Name = "GetProducts")]
+        public ActionResult<ICollection<ProductReadDto>> GetProducts([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting SubСategories by pages...");
 
@@ -34,34 +34,6 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var productsDtos = PagedList<ProductReadDto>.ToPagedList(
                 _mapper.Map<ICollection<ProductReadDto>>(products),
-                parameters.PageNumber,
-                parameters.PageSize
-            );
-
-            var meta = new
-            {
-                productsDtos.TotalCount,
-                productsDtos.PageSize,
-                productsDtos.CurrentPage,
-                productsDtos.TotalPages,
-                productsDtos.HasNext,
-                productsDtos.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
-
-            return Ok(productsDtos);
-        }
-
-        [HttpGet("[action]", Name = "GetDetailedProductsByPages")]
-        public ActionResult<ICollection<ProductDetailedReadDto>> GetDetailedProductsByPages([FromQuery] PageParams parameters)
-        {
-            Console.WriteLine("--> Getting SubСategories by pages...");
-
-            var products = _repository.GetAllProductsDetailed();
-
-            var productsDtos = PagedList<ProductDetailedReadDto>.ToPagedList(
-                _mapper.Map<ICollection<ProductDetailedReadDto>>(products),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -129,7 +101,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         {
             Console.WriteLine($"--> Getting Products by Category with Id: {categoryId} by pages...");
 
-            if (_repository.IsSubCategoryExists(categoryId))
+            if (_repository.IsCategoryExists(categoryId))
             {
                 return NotFound();
             }
@@ -138,40 +110,6 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var productsDtos = PagedList<ProductReadDto>.ToPagedList(
                 _mapper.Map<ICollection<ProductReadDto>>(products),
-                parameters.PageNumber,
-                parameters.PageSize
-            );
-
-            var meta = new
-            {
-                productsDtos.TotalCount,
-                productsDtos.PageSize,
-                productsDtos.CurrentPage,
-                productsDtos.TotalPages,
-                productsDtos.HasNext,
-                productsDtos.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
-
-            return Ok(productsDtos);
-        }
-
-        [HttpGet("[action]", Name = "GetDetailedProductsInCategory")]
-        public ActionResult<ICollection<ProductDetailedReadDto>> GetDetailedProductsInCategory(
-            [FromQuery] Guid categoryId, [FromQuery] PageParams parameters)
-        {
-            Console.WriteLine($"--> Getting Products by Category with Id: {categoryId} by pages...");
-
-            if (_repository.IsSubCategoryExists(categoryId))
-            {
-                return NotFound();
-            }
-
-            var products = _repository.GetProductsByCategoryIdDetailed(categoryId);
-
-            var productsDtos = PagedList<ProductDetailedReadDto>.ToPagedList(
-                _mapper.Map<ICollection<ProductDetailedReadDto>>(products),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -225,57 +163,23 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(productsDtos);
         }
 
-        [HttpGet("[action]", Name = "GetDetailedProductsInSubCategory")]
-        public ActionResult<ICollection<ProductDetailedReadDto>> GetDetailedProductsInSubCategory(
-            [FromQuery] Guid subCategoryId, [FromQuery] PageParams parameters)
-        {
-            Console.WriteLine($"--> Getting Products by SubCategory with Id: {subCategoryId} by pages...");
-
-            if (!_repository.IsSubCategoryExists(subCategoryId))
-            {
-                return NotFound();
-            }
-
-            var products = _repository.GetProductsByCategoryIdDetailed(subCategoryId);
-
-            var productsDtos = PagedList<ProductDetailedReadDto>.ToPagedList(
-                            _mapper.Map<ICollection<ProductDetailedReadDto>>(products),
-                            parameters.PageNumber,
-                            parameters.PageSize
-                        );
-
-            var meta = new
-            {
-                productsDtos.TotalCount,
-                productsDtos.PageSize,
-                productsDtos.CurrentPage,
-                productsDtos.TotalPages,
-                productsDtos.HasNext,
-                productsDtos.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
-
-            return Ok(productsDtos);
-        }
-
         [HttpPost("[action]", Name = "CreateProductInSubCategory")]
-        public ActionResult CreateProductInSubCategory([FromQuery] Guid subCategoryId, [FromBody] ProductCreateDto productCreateDto)
+        public ActionResult CreateProduct([FromBody] ProductCreateDto productCreateDto)
         {
             Console.WriteLine("--> Creating Product...");
 
-            if (!_repository.IsSubCategoryExists(subCategoryId))
+            if (!_repository.IsSubCategoryExists(productCreateDto.SubCategoryId))
             {
                 return NotFound();
             }
 
             var product = _mapper.Map<Product>(productCreateDto);
-            _repository.CreateProduct(subCategoryId, product);
+            _repository.CreateProduct(product);
             _repository.SaveChanges();
 
-            var productReadDto = _mapper.Map<ProductReadDto>(product);
+            SendAsyncMessage(product, EventType.ProductAdded);
 
-            SendAsyncMessage(productReadDto, EventType.ProductAdded);
+            var productReadDto = _mapper.Map<ProductReadDto>(product);
 
             return CreatedAtRoute(
                 nameof(GetProductById),
@@ -299,9 +203,9 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _repository.DeleteProduct(product);
             _repository.SaveChanges();
 
-            var productReadDto = _mapper.Map<ProductReadDto>(product);
+            SendAsyncMessage(product, EventType.ProductDeleted);
 
-            SendAsyncMessage(productReadDto, EventType.ProductDeleted);
+            var productReadDto = _mapper.Map<ProductReadDto>(product);
 
             return NoContent();
         }
@@ -322,17 +226,18 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _repository.UpdateProduct(product);
             _repository.SaveChanges();
 
+            SendAsyncMessage(product, EventType.ProductModified);
+
             var productReadDto = _mapper.Map<ProductReadDto>(product);
-            SendAsyncMessage(productReadDto, EventType.ProductModified);
 
             return NoContent();
         }
 
-        private void SendAsyncMessage(ProductReadDto productReadDto, EventType eventType)
+        private void SendAsyncMessage(Product product, EventType eventType)
         {
             try
             {
-                var productPublishedDto = _mapper.Map<ProductPublishedDto>(productReadDto);
+                var productPublishedDto = _mapper.Map<ProductPublishedDto>(product);
                 productPublishedDto.Event = eventType;
                 _messageBusClient.Publish(productPublishedDto);
             }

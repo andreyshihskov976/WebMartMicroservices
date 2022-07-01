@@ -22,7 +22,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetSubCategoriesByPages")]
-        public ActionResult<ICollection<SubCategoryReadDto>> GetSubCategoriesByPages([FromQuery] PageParams parameters)
+        public ActionResult<ICollection<SubCategoryReadDto>> GetSubCategories([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting SubСategories by pages...");
 
@@ -30,33 +30,6 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var subCategoriesDtosPaged = PagedList<SubCategoryReadDto>.ToPagedList(
                 _mapper.Map<ICollection<SubCategoryReadDto>>(subCategories),
-                parameters.PageNumber,
-                parameters.PageSize
-            );
-
-            var meta = new{
-                subCategoriesDtosPaged.TotalCount,
-                subCategoriesDtosPaged.PageSize,
-                subCategoriesDtosPaged.CurrentPage,
-                subCategoriesDtosPaged.TotalPages,
-                subCategoriesDtosPaged.HasNext,
-                subCategoriesDtosPaged.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
-
-	        return Ok(subCategoriesDtosPaged);
-        }
-
-        [HttpGet("[action]", Name = "GetDetailedSubCategoriesByPages")]
-        public ActionResult<ICollection<SubCategoryDetailedReadDto>> GetDetailedSubCategoriesByPages([FromQuery] PageParams parameters)
-        {
-            Console.WriteLine("--> Getting SubСategories by pages...");
-
-            var subCategories = _repository.GetAllSubCategoriesDetailed();
-
-            var subCategoriesDtosPaged = PagedList<SubCategoryDetailedReadDto>.ToPagedList(
-                _mapper.Map<ICollection<SubCategoryDetailedReadDto>>(subCategories),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -84,20 +57,6 @@ namespace WebMart.Microservices.CatalogService.Controllers
             if (subCategory != null)
             {
                 return Ok(_mapper.Map<SubCategoryReadDto>(subCategory));
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetDetailedSubCategoryById")]
-        public ActionResult<SubCategoryDetailedReadDto> GetDetailedSubCategoryById([FromQuery] Guid id)
-        {
-            Console.WriteLine($"--> Getting SubCategory by Id: {id}...");
-
-            var subCategory = _repository.GetSubCategoryByIdDetailed(id);
-            if (subCategory != null)
-            {
-                return Ok(_mapper.Map<SubCategoryDetailedReadDto>(subCategory));
             }
 
             return NotFound();
@@ -136,52 +95,18 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(subCategoriesDtosPaged);
         }
 
-        [HttpGet("[action]", Name = "GetDetailedSubCategoriesInCategory")]
-        public ActionResult<ICollection<SubCategoryDetailedReadDto>> GetDetailedSubCategoriesInCategory(
-            [FromQuery] Guid categoryId, [FromQuery] PageParams parameters)
-        {
-            Console.WriteLine($"--> Getting SubCategories by Category with Id: {categoryId} by pages...");
-
-            if(!_repository.IsCategoryExists(categoryId))
-            {
-                return NotFound();
-            }
-
-            var subCategories = _repository.GetSubCategoriesByCategoryIdDetailed(categoryId);
-
-            var subCategoriesDtosPaged = PagedList<SubCategoryDetailedReadDto>.ToPagedList(
-                _mapper.Map<ICollection<SubCategoryDetailedReadDto>>(subCategories),
-                parameters.PageNumber,
-                parameters.PageSize
-            );
-
-            var meta = new{
-                subCategoriesDtosPaged.TotalCount,
-                subCategoriesDtosPaged.PageSize,
-                subCategoriesDtosPaged.CurrentPage,
-                subCategoriesDtosPaged.TotalPages,
-                subCategoriesDtosPaged.HasNext,
-                subCategoriesDtosPaged.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
-
-            return Ok(subCategoriesDtosPaged);
-        }
-
         [HttpPost("[action]", Name = "CreateSubCategoryInCategory")]
-        public ActionResult CreateSubCategoryInCategory(
-            [FromQuery] Guid categoryId, [FromBody] SubCategoryCreateDto subCategoryCreateDto)
+        public ActionResult CreateSubCategory([FromBody] SubCategoryCreateDto subCategoryCreateDto)
         {
-            Console.WriteLine($"--> Creating SubCategory for Category with Id: {categoryId}...");
+            Console.WriteLine($"--> Creating SubCategory...");
 
-            if (!_repository.IsCategoryExists(categoryId))
+            if (!_repository.IsCategoryExists(subCategoryCreateDto.CategoryId))
             {
                 return NotFound();
             }
 
             var subCategory = _mapper.Map<SubCategory>(subCategoryCreateDto);
-            _repository.CreateSubCategory(categoryId, subCategory);
+            _repository.CreateSubCategory(subCategory);
             _repository.SaveChanges();
 
             var subCategoryReadDto = _mapper.Map<SubCategoryReadDto>(subCategory);

@@ -14,13 +14,12 @@ namespace WebMart.Microservices.CatalogService.Repos
             _context = context;
         }
 
-        public void CreateProduct(Guid subCategoryId, Product product)
+        public void CreateProduct(Product product)
         {
             if (product == null)
             {
                 throw new ArgumentNullException(nameof(product));
             }
-            product.SubCategoryId = subCategoryId;
             _context.Products.Add(product);
         }
 
@@ -44,15 +43,7 @@ namespace WebMart.Microservices.CatalogService.Repos
 
         public ICollection<Product> GetAllProducts()
         {
-            return _context.Products.OrderBy(on => on.Name).ToList();
-        }
-
-        public ICollection<Product> GetAllProductsDetailed()
-        {
-            return _context.Products
-                .Include(p => p.SubCategory)
-                .ThenInclude(sc => sc.Category)
-                .OrderBy(p => p.Name).ToList();
+            return _context.Products.OrderBy(on => on.Manufacturer).ToList();
         }
 
         public Product GetProductById(Guid productId)
@@ -72,32 +63,14 @@ namespace WebMart.Microservices.CatalogService.Repos
         {
             return _context.Products
                 .Where(p => p.SubCategory.CategoryId == categoryId)
-                .OrderBy(p => p.Name).ToList();
-        }
-
-        public ICollection<Product> GetProductsByCategoryIdDetailed(Guid categoryId)
-        {
-            return _context.Products
-                .Include(p => p.SubCategory)
-                .ThenInclude(sc => sc.Category)
-                .Where(p => p.SubCategory.CategoryId == categoryId)
-                .OrderBy(p => p.Name).ToList();
+                .OrderBy(p => p.Manufacturer).ToList();
         }
 
         public ICollection<Product> GetProductsBySubCategoryId(Guid subCategoryId)
         {
             return _context.Products
                 .Where(p => p.SubCategoryId == subCategoryId)
-                .OrderBy(p => p.Name).ToList();
-        }
-
-        public ICollection<Product> GetProductsBySubCategoryIdDetailed(Guid subCategoryId)
-        {
-            return _context.Products
-                .Include(p => p.SubCategory)
-                .ThenInclude(sc => sc.Category)
-                .Where(p => p.SubCategoryId == subCategoryId)
-                .OrderBy(p => p.Name).ToList();
+                .OrderBy(p => p.Manufacturer).ToList();
         }
 
         public bool IsSubCategoryExists(Guid subCategoryId)

@@ -14,13 +14,12 @@ namespace WebMart.Microservices.CatalogService.Repos
             _context = context;
         }
 
-        public void CreateSubCategory(Guid categoryId, SubCategory subCategory)
+        public void CreateSubCategory(SubCategory subCategory)
         {
             if (subCategory == null)
             {
                 throw new ArgumentNullException(nameof(subCategory));
             }
-            subCategory.CategoryId = categoryId;
             _context.SubCategories.Add(subCategory);
         }
 
@@ -47,38 +46,14 @@ namespace WebMart.Microservices.CatalogService.Repos
             return _context.SubCategories.OrderBy(sc => sc.Name).ToList();
         }
 
-        public ICollection<SubCategory> GetAllSubCategoriesDetailed()
-        {
-            return _context.SubCategories
-                .Include(sc => sc.Category)
-                .Include(sc => sc.Products)
-                .OrderBy(sc => sc.Name).ToList();
-        }
-
         public SubCategory GetSubCategoryById(Guid subCategoryId)
         {
             return _context.SubCategories.FirstOrDefault(sc => sc.Id == subCategoryId);
         }
 
-        public SubCategory GetSubCategoryByIdDetailed(Guid subCategoryId)
-        {
-            return _context.SubCategories
-                .Include(sc => sc.Category)
-                .Include(sc => sc.Products)
-                .FirstOrDefault(sc => sc.Id == subCategoryId);
-        }
-
         public ICollection<SubCategory> GetSubCategoriesByCategoryId(Guid categoryId)
         {
             return _context.SubCategories
-                .Where(sc => sc.CategoryId == categoryId).OrderBy(on => on.Name).ToList();
-        }
-
-        public ICollection<SubCategory> GetSubCategoriesByCategoryIdDetailed(Guid categoryId)
-        {
-            return _context.SubCategories
-                .Include(sc => sc.Category)
-                .Include(sc => sc.Products)
                 .Where(sc => sc.CategoryId == categoryId).OrderBy(on => on.Name).ToList();
         }
 

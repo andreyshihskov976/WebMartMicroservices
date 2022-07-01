@@ -28,7 +28,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetCategoriesByPages")]
-        public ActionResult<ICollection<CategoryReadDto>> GetCategoriesByPages([FromQuery] PageParams parameters)
+        public ActionResult<ICollection<CategoryReadDto>> GetCategories([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting Сategories by pages...");
 
@@ -36,33 +36,6 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             var categoriesDtos = PagedList<CategoryReadDto>.ToPagedList(
                 _mapper.Map<ICollection<CategoryReadDto>>(categories),
-                parameters.PageNumber,
-                parameters.PageSize
-            );
-
-            var meta = new{
-                categoriesDtos.TotalCount,
-                categoriesDtos.PageSize,
-                categoriesDtos.CurrentPage,
-                categoriesDtos.TotalPages,
-                categoriesDtos.HasNext,
-                categoriesDtos.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
-
-	        return Ok(categoriesDtos);
-        }
-
-        [HttpGet("[action]", Name = "GetCategoriesDetailedByPages")]
-        public ActionResult<ICollection<CategoryDetailedReadDto>> GetCategoriesDetailedByPages([FromQuery] PageParams parameters)
-        {
-            Console.WriteLine("--> Getting Сategories by pages...");
-
-            var categories = _repository.GetAllCategoriesDetailed();
-
-            var categoriesDtos = PagedList<CategoryDetailedReadDto>.ToPagedList(
-                _mapper.Map<ICollection<CategoryDetailedReadDto>>(categories),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -90,20 +63,6 @@ namespace WebMart.Microservices.CatalogService.Controllers
             if (category != null)
             {
                 return Ok(_mapper.Map<CategoryReadDto>(category));
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetCategoryByIdDetailed")]
-        public ActionResult<CategoryDetailedReadDto> GetCategoryByIdDetailed([FromQuery] Guid id)
-        {
-            Console.WriteLine($"--> Getting Category by Id: {id}...");
-
-            var category = _repository.GetCategoryByIdDetailed(id);
-            if (category != null)
-            {
-                return Ok(_mapper.Map<CategoryDetailedReadDto>(category));
             }
 
             return NotFound();

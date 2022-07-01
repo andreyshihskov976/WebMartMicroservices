@@ -14,7 +14,7 @@ namespace WebMart.Microservices.CatalogService.Models
         public string Description { get; set; }
 
         [Required]
-        public Guid? CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
 
         public Category Category { get; set; }
 

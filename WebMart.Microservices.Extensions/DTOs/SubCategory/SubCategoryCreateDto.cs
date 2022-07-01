@@ -9,5 +9,8 @@ namespace WebMart.Microservices.Extensions.DTOs.SubCategory
 
         [Required]
         public string Description { get; set; }
+
+        [Required]
+        public Guid CategoryId { get; set; }
     }
 }

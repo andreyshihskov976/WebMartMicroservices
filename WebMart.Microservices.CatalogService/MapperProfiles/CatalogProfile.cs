@@ -13,20 +13,16 @@ namespace WebMart.Microservices.CatalogService.MapperProfiles
             //Source -> Target
             CreateMap<Category, CategoryReadDto>();
             CreateMap<CategoryCreateDto, Category>();
-            CreateMap<Category, CategoryDetailedReadDto>()
-                .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.SubCategories));
 
             CreateMap<SubCategory, SubCategoryReadDto>();
             CreateMap<SubCategoryCreateDto, SubCategory>();
-            CreateMap<SubCategory, SubCategoryDetailedReadDto>()
-                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
 
             CreateMap<Product, ProductReadDto>();
             CreateMap<ProductCreateDto, Product>();
-            CreateMap<ProductReadDto, ProductPublishedDto>();
-            CreateMap<Product, ProductPublishedDto>();
             CreateMap<Product, ProductDetailedReadDto>()
                 .ForMember(dest => dest.SubCategory, opt => opt.MapFrom(src => src.SubCategory));
+
+            CreateMap<Product, ProductPublishedDto>();
         }
     }
 }

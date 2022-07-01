@@ -46,13 +46,6 @@ namespace WebMart.Microservices.CatalogService.Repos
             return _context.Categories.OrderBy(c => c.Name).ToList();
         }
 
-        public ICollection<Category> GetAllCategoriesDetailed()
-        {
-            return _context.Categories
-                .Include(c => c.SubCategories)
-                .OrderBy(c => c.Name).ToList();
-        }
-
         public Category GetCategoryById(Guid categoryId)
         {
             return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
