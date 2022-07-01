@@ -46,18 +46,24 @@ namespace WebMart.Microservices.CatalogService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AdditionalInfo")
+                        .HasColumnType("text");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Model")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid?>("SubCategoryId")
-                        .IsRequired()
+                    b.Property<Guid>("SubCategoryId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -73,8 +79,7 @@ namespace WebMart.Microservices.CatalogService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CategoryId")
-                        .IsRequired()
+                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
