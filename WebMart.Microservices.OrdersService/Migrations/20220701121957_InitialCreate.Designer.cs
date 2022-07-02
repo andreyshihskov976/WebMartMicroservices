@@ -12,7 +12,7 @@ using WebMart.Microservices.OrdersService.Data;
 namespace WebMart.Microservices.OrdersService.Migrations
 {
     [DbContext(typeof(OrdersDbContext))]
-    [Migration("20220628110513_InitialCreate")]
+    [Migration("20220701121957_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,12 @@ namespace WebMart.Microservices.OrdersService.Migrations
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
+
+                    b.Property<int>("ProductCount")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("TotalCost")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 

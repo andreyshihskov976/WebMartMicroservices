@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
 using WebMart.Microservices.Extensions.DTOs.Basket;
-using WebMart.Microservices.Extensions.EventProcessing;
 using WebMart.Microservices.Extensions.AsyncDataServices;
 using WebMart.Microservices.Extensions.SyncDataServices;
 using WebMart.Microservices.Extensions.DTOs.Product;
 using WebMart.Microservices.Extensions.Enums;
 using Newtonsoft.Json;
+using WebMart.Microservices.Extensions.Pages;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
@@ -31,23 +31,31 @@ namespace WebMart.Microservices.BasketService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetAllBaskets")]
-        public ActionResult<IEnumerable<BasketReadDto>> GetAllBaskets()
+        public ActionResult<ICollection<BasketReadDto>> GetBaskets([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting all Baskets...");
 
             var baskets = _repository.GetAllBaskets();
 
-            return Ok(_mapper.Map<IEnumerable<BasketReadDto>>(baskets));
-        }
+            var basketsDtos = PagedList<BasketReadDto>.ToPagedList(
+                _mapper.Map<ICollection<BasketReadDto>>(baskets),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
 
-        [HttpGet("[action]", Name = "GetAllBasketsDetailed")]
-        public ActionResult<IEnumerable<BasketDetailedReadDto>> GetAllBasketsDetailed()
-        {
-            Console.WriteLine("--> Getting all Baskets...");
+            var meta = new
+            {
+                basketsDtos.TotalCount,
+                basketsDtos.PageSize,
+                basketsDtos.CurrentPage,
+                basketsDtos.TotalPages,
+                basketsDtos.HasNext,
+                basketsDtos.HasPrevious
+            };
 
-            var baskets = _repository.GetAllBasketsDetailed();
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
 
-            return Ok(_mapper.Map<IEnumerable<BasketDetailedReadDto>>(baskets));
+            return Ok(basketsDtos);
         }
 
         [HttpGet("[action]", Name = "GetBasketById")]
@@ -60,21 +68,6 @@ namespace WebMart.Microservices.BasketService.Controllers
             if (basket != null)
             {
                 return Ok(_mapper.Map<BasketReadDto>(basket));
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetBasketByIdDetailed")]
-        public ActionResult<BasketDetailedReadDto> GetBasketByIdDetailed(Guid id)
-        {
-            Console.WriteLine($"--> Gettng Basket with id: {id}...");
-
-            var basket = _repository.GetBasketByIdDetailed(id);
-
-            if (basket != null)
-            {
-                return Ok(_mapper.Map<BasketDetailedReadDto>(basket));
             }
 
             return NotFound();
@@ -96,11 +89,11 @@ namespace WebMart.Microservices.BasketService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetBasketByCustomerId")]
-        public ActionResult<BasketReadDto> GetBasketByCustomerId([FromQuery] int customerId, [FromQuery] bool isOrdered)
+        public ActionResult<BasketReadDto> GetOpenBasketByCustomerId([FromQuery] int customerId)
         {
             Console.WriteLine($"--> Gettng Basket with id of customer: {customerId}...");
 
-            var basket = _repository.GetBasketByCustomerId(customerId, isOrdered);
+            var basket = _repository.GetOpenBasketByCustomerId(customerId);
 
             if (basket != null)
             {
@@ -110,19 +103,32 @@ namespace WebMart.Microservices.BasketService.Controllers
             return NotFound();
         }
 
-        [HttpGet("[action]", Name = "GetBasketByCustomerIdDetailed")]
-        public ActionResult<BasketDetailedReadDto> GetBasketByCustomerIdDetailed([FromQuery] int customerId, [FromQuery] bool isOrdered)
+        [HttpGet("[action]", Name = "GetProductsInBasket")]
+        public ActionResult<ICollection<ProductReadDto>> GetProductsInBasket([FromQuery] Guid basketId, [FromQuery] PageParams parameters)
         {
-            Console.WriteLine($"--> Gettng Basket with id of customer: {customerId}...");
+            Console.WriteLine($"--> Getting Product from basket with id: {basketId}");
 
-            var basket = _repository.GetBasketByCustomerIdDetailed(customerId, isOrdered);
+            var products = _repository.GetProductsInBasket(basketId);
 
-            if (basket != null)
+            var productsDtos = PagedList<ProductReadDto>.ToPagedList(
+                _mapper.Map<ICollection<ProductReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
             {
-                return Ok(_mapper.Map<BasketDetailedReadDto>(basket));
-            }
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
 
-            return NotFound();
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
         }
 
         [HttpPost("[action]", Name = "CreateBasket")]
@@ -130,20 +136,21 @@ namespace WebMart.Microservices.BasketService.Controllers
         {
             Console.WriteLine($"--> Creating Basket for Customer with id: {basketCreateDto.CustomerId}...");
 
-            var basket = _repository.GetBasketByCustomerId(basketCreateDto.CustomerId, false);
-
-            if (basket != null)
+            if (_repository.OpenBasketForCustomerExists(basketCreateDto.CustomerId))
             {
-                return Ok(_mapper.Map<BasketReadDto>(basket));
+                return RedirectToAction(
+                    nameof(GetOpenBasketByCustomerId),
+                    new { customerId = basketCreateDto.CustomerId }
+                );
             }
 
-            basket = _mapper.Map<Basket>(basketCreateDto);
+            var basket = _mapper.Map<Basket>(basketCreateDto);
             _repository.CreateBasket(basket);
             _repository.SaveChanges();
 
-            var basketReadDto = _mapper.Map<BasketReadDto>(basket);
+            SendAsyncMessage(basket, EventType.BasketAdded);
 
-            SendAsyncMessage(basketReadDto, EventType.BasketAdded);
+            var basketReadDto = _mapper.Map<BasketReadDto>(basket);
 
             return CreatedAtRoute(
                 nameof(GetBasketById),
@@ -164,7 +171,7 @@ namespace WebMart.Microservices.BasketService.Controllers
                 return NotFound();
             }
 
-            if (basket.IsOrdered)
+            if (basket.IsClosed)
             {
                 return BadRequest();
             }
@@ -172,9 +179,7 @@ namespace WebMart.Microservices.BasketService.Controllers
             _repository.DeleteBasket(basket);
             _repository.SaveChanges();
 
-            var basketReadDto = _mapper.Map<BasketReadDto>(basket);
-
-            SendAsyncMessage(basketReadDto, EventType.BasketDeleted);
+            SendAsyncMessage(basket, EventType.BasketDeleted);
 
             return NoContent();
         }
@@ -191,7 +196,7 @@ namespace WebMart.Microservices.BasketService.Controllers
                 return NotFound();
             }
 
-            if (basket.IsOrdered)
+            if (basket.IsClosed)
             {
                 return BadRequest();
             }
@@ -200,7 +205,7 @@ namespace WebMart.Microservices.BasketService.Controllers
 
             if (product == null)
             {
-                //Adding missing Product
+                //Add missing Product to local Db
                 var productPublishedDto = await GetProductFromCatalogServiceAsync(productId);
                 if (productPublishedDto != null)
                 {
@@ -223,6 +228,8 @@ namespace WebMart.Microservices.BasketService.Controllers
             _repository.UpdateBasket(basket);
             _repository.SaveChanges();
 
+            SendAsyncMessage(basket, EventType.BasketDeleted);
+
             return NoContent();
         }
 
@@ -238,7 +245,7 @@ namespace WebMart.Microservices.BasketService.Controllers
                 return NotFound();
             }
 
-            if (basket.IsOrdered)
+            if (basket.IsClosed)
             {
                 return BadRequest();
             }
@@ -250,11 +257,13 @@ namespace WebMart.Microservices.BasketService.Controllers
             _repository.UpdateBasket(basket);
             _repository.SaveChanges();
 
+            SendAsyncMessage(basket, EventType.BasketDeleted);
+
             return NoContent();
         }
 
 
-        private void SendAsyncMessage(BasketReadDto basketReadDto, EventType eventType)
+        private void SendAsyncMessage(Basket basketReadDto, EventType eventType)
         {
             try
             {

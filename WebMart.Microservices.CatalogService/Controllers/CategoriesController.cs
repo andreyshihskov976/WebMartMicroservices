@@ -69,7 +69,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpPost("[action]", Name = "CreateCategory")]
-        public ActionResult CreateCategory([FromBody] CategoryCreateDto categoryCreateDto)
+        public ActionResult CreateCategory([FromBody] CategoryCreateUpdateDto categoryCreateDto)
         {
             Console.WriteLine("--> Creating Category...");
 
@@ -105,7 +105,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpPut("[action]", Name = "UpdateCategory")]
-        public ActionResult UpdateCategory([FromQuery] Guid id, [FromBody] CategoryCreateDto categoryCreateDto)
+        public ActionResult UpdateCategory([FromQuery] Guid id, [FromBody] CategoryCreateUpdateDto categoryCreateDto)
         {
             Console.WriteLine($"--> Updating Category with Id: {id}");
 

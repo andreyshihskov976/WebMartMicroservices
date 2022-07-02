@@ -15,7 +15,7 @@ namespace WebMart.Microservices.BasketService.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CustomerId = table.Column<int>(type: "integer", nullable: false),
-                    IsOrdered = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    IsClosed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -27,7 +27,8 @@ namespace WebMart.Microservices.BasketService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    Manufacturer = table.Column<string>(type: "text", nullable: false),
+                    Model = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>

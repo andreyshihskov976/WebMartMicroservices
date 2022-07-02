@@ -1,7 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
+using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Microservices.Extensions.Pages;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
@@ -19,17 +22,35 @@ namespace WebMart.Microservices.BasketService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetAllProducts")]
-        public ActionResult<IEnumerable<Product>> GetAllProducts()
+        public ActionResult<ICollection<ProductReadDto>> GetProducts([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting all Products...");
 
             var products = _repository.GetAllProducts();
 
-            return Ok(products);
+            var productsDtos = PagedList<ProductReadDto>.ToPagedList(
+                _mapper.Map<ICollection<ProductReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
+            {
+                productsDtos.TotalCount,
+                productsDtos.PageSize,
+                productsDtos.CurrentPage,
+                productsDtos.TotalPages,
+                productsDtos.HasNext,
+                productsDtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(productsDtos);
         }
 
         [HttpGet("[action]", Name = "GetProductById")]
-        public ActionResult<Product> GetProductById([FromQuery] Guid id)
+        public ActionResult<ProductReadDto> GetProductById([FromQuery] Guid id)
         {
             Console.WriteLine($"--> Getting Product with id: {id}...");
 
@@ -37,22 +58,7 @@ namespace WebMart.Microservices.BasketService.Controllers
 
             if(product != null)
             {
-                Ok(product);
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetProductByExternalId")]
-        public ActionResult<Product> GetProductByExternalId([FromQuery] Guid externalId)
-        {
-            Console.WriteLine($"--> Getting Product with external id: {externalId}...");
-
-            var product = _repository.GetProductById(externalId);
-
-            if(product != null)
-            {
-                Ok(product);
+                Ok(_mapper.Map<ProductReadDto>(product));
             }
 
             return NotFound();

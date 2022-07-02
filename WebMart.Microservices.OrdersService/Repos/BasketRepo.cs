@@ -42,7 +42,7 @@ namespace WebMart.Microservices.OrdersService.Repos
 
         public ICollection<Basket> GetAllBaskets()
         {
-            return _context.Baskets.OrderBy(b => b.Id).ToList();
+            return _context.Baskets.OrderBy(b => b.CustomerId).ToList();
         }
 
         public Basket GetBasketById(Guid basketId)

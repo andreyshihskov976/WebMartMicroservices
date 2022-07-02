@@ -10,10 +10,10 @@ namespace WebMart.Microservices.BasketService.MapperProfiles
         public OrdersProfile()
         {
             //Source -> Target
-            CreateMap<Order, OrderReadDto>();
+            CreateMap<Order, OrderReadDto>()
+                .ForMember(dest => dest.Basket, opt => opt.MapFrom(src => src.Basket));
             CreateMap<OrderCreateDto, Order>();
-            CreateMap<OrderReadDto, OrderPublishedDto>();
-            CreateMap<Order, OrderDetailedReadDto>();
+            CreateMap<Order, OrderPublishedDto>();
 
             CreateMap<Basket, BasketReadDto>();
             CreateMap<BasketPublishedDto, Basket>();

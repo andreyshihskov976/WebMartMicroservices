@@ -10,15 +10,13 @@ namespace WebMart.Microservices.BasketService.MapperProfiles
         public BasketProfile()
         {
             //Source -> Target
-            CreateMap<Basket, BasketReadDto>();
+            CreateMap<Basket, BasketReadDto>()
+                .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src => src.Products.Count))
+                .ForMember(dest => dest.TotalCost, opt => opt.MapFrom(src => src.Products.Sum(p => p.Price)));
             CreateMap<BasketCreateDto, Basket>();
-            CreateMap<BasketReadDto, BasketPublishedDto>();
-            CreateMap<Basket, BasketPublishedDto>();
-            CreateMap<Basket, BasketDetailedReadDto>()
-                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products))
-                .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src => src.Products.Count));
-
-            CreateMap<Product, BasketProductReadDto>();
+            CreateMap<Basket, BasketPublishedDto>()
+                .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src => src.Products.Count))
+                .ForMember(dest => dest.TotalCost, opt => opt.MapFrom(src => src.Products.Sum(p => p.Price)));
 
             CreateMap<Product, ProductReadDto>();
             CreateMap<ProductPublishedDto, Product>();

@@ -143,10 +143,10 @@ namespace WebMart.Microservices.CatalogService.Controllers
             var products = _repository.GetProductsByCategoryId(subCategoryId);
 
             var productsDtos = PagedList<ProductReadDto>.ToPagedList(
-                            _mapper.Map<ICollection<ProductReadDto>>(products),
-                            parameters.PageNumber,
-                            parameters.PageSize
-                        );
+                _mapper.Map<ICollection<ProductReadDto>>(products),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
 
             var meta = new
             {
@@ -211,7 +211,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpPut("[action]", Name = "UpdateProduct")]
-        public ActionResult UpdateProduct([FromQuery] Guid id, [FromBody] ProductCreateDto productCreateDto)
+        public ActionResult UpdateProduct([FromQuery] Guid id, [FromBody] ProductUpdateDto productUpdateDto)
         {
             Console.WriteLine($"--> Updating Category with Id: {id}");
 
@@ -222,7 +222,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
                 return NotFound();
             }
 
-            _mapper.Map(productCreateDto, product);
+            _mapper.Map(productUpdateDto, product);
             _repository.UpdateProduct(product);
             _repository.SaveChanges();
 

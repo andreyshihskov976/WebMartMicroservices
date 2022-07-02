@@ -30,7 +30,7 @@ namespace WebMart.Microservices.BasketService.EventProcessing
                 case EventType.ProductAdded:
                     AddProduct(message);
                     break;
-                case EventType.ProductModified:
+                case EventType.ProductUpdated:
                     UpdateProduct(message);
                     break;
                 case EventType.ProductDeleted:
@@ -160,7 +160,7 @@ namespace WebMart.Microservices.BasketService.EventProcessing
                     var basketInRepo = repo.GetBasketById(orderPublishedDto.BasketId);
                     if (basketInRepo != null)
                     {
-                        basketInRepo.IsOrdered = isOrdered;
+                        basketInRepo.IsClosed = isOrdered;
                         repo.UpdateBasket(basketInRepo);
                         repo.SaveChanges();
                         Console.WriteLine("--> Basket updated!");

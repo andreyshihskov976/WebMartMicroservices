@@ -6,11 +6,8 @@ namespace WebMart.Microservices.OrdersService.Repos.Interfaces
     {
         bool SaveChanges();
         ICollection<Order> GetAllOrders();
-        ICollection<Order> GetAllOrdersDetailed();
         Order GetOrderById(Guid orderId);
-        Order GetOrderByIdDetailed(Guid orderId);
-        Order GetOrderByCustomerId(int customerId);
-        Order GetOrderByCustomerIdDetailed(int customerId);
+        ICollection<Order> GetOrdersByCustomerId(int customerId);
         void CreateOrder(Order order);
         void DeleteOrder(Order order);
         void UpdateOrder(Order order);

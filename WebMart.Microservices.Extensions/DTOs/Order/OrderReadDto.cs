@@ -1,3 +1,4 @@
+using WebMart.Microservices.Extensions.DTOs.Basket;
 using WebMart.Microservices.Extensions.Enums;
 
 namespace WebMart.Microservices.Extensions.DTOs.Order
@@ -5,8 +6,8 @@ namespace WebMart.Microservices.Extensions.DTOs.Order
     public class OrderReadDto
     {
         public Guid Id { get; set; }
-        public Guid BasketId { get; set; }
         public DateTime OrderDate { get; set; }
-        public OrderStatus Status { get; set; }        
+        public OrderStatus Status { get; set; }
+        public BasketReadDto Basket { get; set; }
     }
 }

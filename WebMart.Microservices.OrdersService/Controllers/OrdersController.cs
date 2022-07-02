@@ -5,6 +5,7 @@ using WebMart.Microservices.Extensions.AsyncDataServices;
 using WebMart.Microservices.Extensions.DTOs.Basket;
 using WebMart.Microservices.Extensions.DTOs.Order;
 using WebMart.Microservices.Extensions.Enums;
+using WebMart.Microservices.Extensions.Pages;
 using WebMart.Microservices.Extensions.SyncDataServices;
 using WebMart.Microservices.OrdersService.Models;
 using WebMart.Microservices.OrdersService.Repos.Interfaces;
@@ -29,28 +30,36 @@ namespace Namespace
             _httpDataService = httpDataService;
         }
 
-        [HttpGet("[action]", Name = "GetAllOrders")]
-        public ActionResult<IEnumerable<WebMart.Microservices.Extensions.DTOs.Order.OrderReadDto>> GetAllOrders()
+        [HttpGet("[action]", Name = "GetOrders")]
+        public ActionResult<ICollection<OrderReadDto>> GetOrders([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting all Orders...");
 
             var orders = _repository.GetAllOrders();
 
-            return base.Ok(_mapper.Map<IEnumerable<WebMart.Microservices.Extensions.DTOs.Order.OrderReadDto>>(orders));
-        }
+            var ordersDtos = PagedList<BasketReadDto>.ToPagedList(
+                _mapper.Map<ICollection<BasketReadDto>>(orders),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
 
-        [HttpGet("[action]", Name = "GetAllOrdersDetailed")]
-        public ActionResult<IEnumerable<OrderDetailedReadDto>> GetAllOrdersDetailed()
-        {
-            Console.WriteLine("--> Getting all Orders...");
+            var meta = new
+            {
+                ordersDtos.TotalCount,
+                ordersDtos.PageSize,
+                ordersDtos.CurrentPage,
+                ordersDtos.TotalPages,
+                ordersDtos.HasNext,
+                ordersDtos.HasPrevious
+            };
 
-            var orders = _repository.GetAllOrdersDetailed();
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
 
-            return Ok(_mapper.Map<IEnumerable<OrderDetailedReadDto>>(orders));
+            return Ok(ordersDtos);
         }
 
         [HttpGet("[action]", Name = "GetOrderById")]
-        public ActionResult<WebMart.Microservices.Extensions.DTOs.Order.OrderReadDto> GetOrderById(Guid id)
+        public ActionResult<OrderReadDto> GetOrderById(Guid id)
         {
             Console.WriteLine($"--> Gettng Order with id: {id}...");
 
@@ -58,55 +67,38 @@ namespace Namespace
 
             if (order != null)
             {
-                return base.Ok(_mapper.Map<WebMart.Microservices.Extensions.DTOs.Order.OrderReadDto>(order));
+                return Ok(_mapper.Map<OrderReadDto>(order));
             }
 
             return NotFound();
         }
 
-        [HttpGet("[action]", Name = "GetOrderByIdDetailed")]
-        public ActionResult<OrderDetailedReadDto> GetOrderByIdDetailed(Guid id)
-        {
-            Console.WriteLine($"--> Gettng Order with id: {id}...");
-
-            var basket = _repository.GetOrderByIdDetailed(id);
-
-            if (basket != null)
-            {
-                return Ok(_mapper.Map<OrderDetailedReadDto>(basket));
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetOrderByCustomerId")]
-        public ActionResult<WebMart.Microservices.Extensions.DTOs.Order.OrderReadDto> GetOrderByCustomerId([FromQuery] int customerId)
-        {
-            Console.WriteLine($"--> Gettng Order with id of customer: {customerId}...");
-
-            var basket = _repository.GetOrderByCustomerId(customerId);
-
-            if (basket != null)
-            {
-                return base.Ok(_mapper.Map<WebMart.Microservices.Extensions.DTOs.Order.OrderReadDto>(basket));
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetOrderByCustomerIdDetailed")]
-        public ActionResult<OrderDetailedReadDto> GetOrderByCustomerIdDetailed([FromQuery] int customerId)
+        [HttpGet("[action]", Name = "GetOrdersByCustomerId")]
+        public ActionResult<ICollection<OrderDetailedReadDto>> GetOrdersByCustomerId([FromQuery] int customerId, [FromQuery] PageParams parameters)
         {
             Console.WriteLine($"--> Gettng Basket with id of customer: {customerId}...");
 
-            var basket = _repository.GetOrderByCustomerIdDetailed(customerId);
+            var orders = _repository.GetOrdersByCustomerId(customerId);
 
-            if (basket != null)
+            var ordersDtos = PagedList<BasketReadDto>.ToPagedList(
+                _mapper.Map<ICollection<BasketReadDto>>(orders),
+                parameters.PageNumber,
+                parameters.PageSize
+            );
+
+            var meta = new
             {
-                return Ok(_mapper.Map<OrderDetailedReadDto>(basket));
-            }
+                ordersDtos.TotalCount,
+                ordersDtos.PageSize,
+                ordersDtos.CurrentPage,
+                ordersDtos.TotalPages,
+                ordersDtos.HasNext,
+                ordersDtos.HasPrevious
+            };
 
-            return NotFound();
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
+
+            return Ok(ordersDtos);
         }
 
         [HttpPost("[action]", Name = "CreateOrder")]
@@ -114,14 +106,12 @@ namespace Namespace
         {
             Console.WriteLine($"--> Creating Order for Basket with id: {orderCreateDto.BasketId}...");
 
-            var basket = _repository.GetBasketById(orderCreateDto.BasketId);
-
-            if (basket == null)
+            if (!_repository.BasketExists(orderCreateDto.BasketId))
             {
                 var basketPublishedDto = await GetBasketFromCatalogServiceAsync(orderCreateDto.BasketId);
                 if (basketPublishedDto != null)
                 {
-                    basket = _mapper.Map<Basket>(basketPublishedDto);
+                    var basket = _mapper.Map<Basket>(basketPublishedDto);
                     _repository.CreateMissingBasket(basket);
                 }
                 else
@@ -137,11 +127,9 @@ namespace Namespace
             _repository.CreateOrder(order);
             _repository.SaveChanges();
 
+            SendAsyncMessage(order, EventType.OrderAdded);
+
             var orderReadDto = _mapper.Map<OrderReadDto>(order);
-
-            SendAsyncMessage(orderReadDto, EventType.OrderAdded);
-
-            orderReadDto.BasketId = basket.Id;
 
             return CreatedAtRoute(
                 nameof(GetOrderById),
@@ -165,14 +153,14 @@ namespace Namespace
             _repository.DeleteOrder(order);
             _repository.SaveChanges();
 
-            var basketReadDto = _mapper.Map<OrderReadDto>(order);
+            SendAsyncMessage(order, EventType.OrderDeleted);
 
-            SendAsyncMessage(basketReadDto, EventType.OrderDeleted);
+            var basketReadDto = _mapper.Map<OrderReadDto>(order);
 
             return NoContent();
         }
 
-        private void SendAsyncMessage(OrderReadDto orderReadDto, EventType eventType)
+        private void SendAsyncMessage(Order orderReadDto, EventType eventType)
         {
             try
             {

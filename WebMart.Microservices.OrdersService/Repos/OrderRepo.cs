@@ -43,14 +43,7 @@ namespace WebMart.Microservices.OrdersService.Repos
 
         public ICollection<Order> GetAllOrders()
         {
-            return _context.Orders.OrderBy(o => o.Id).ToList();
-        }
-
-        public ICollection<Order> GetAllOrdersDetailed()
-        {
-            return _context.Orders
-                .Include(o => o.Basket)
-                .OrderBy(o => o.Id).ToList();
+            return _context.Orders.OrderBy(o => o.OrderDate).ToList();
         }
 
         public Order GetOrderById(Guid orderId)
@@ -58,30 +51,16 @@ namespace WebMart.Microservices.OrdersService.Repos
             return _context.Orders.FirstOrDefault(o => o.Id == orderId);
         }
 
-        public Order GetOrderByIdDetailed(Guid orderId)
+        public ICollection<Order> GetOrdersByCustomerId(int customerId)
         {
-            return _context.Orders
-                .Include(o => o.Basket)
-                .FirstOrDefault(o => o.Id == orderId);
-        }
-
-        public Order GetOrderByCustomerId(int customerId)
-        {
-            return _context.Orders.FirstOrDefault(o => o.Basket.CustomerId == customerId);
-        }
-
-        public Order GetOrderByCustomerIdDetailed(int customerId)
-        {
-            return _context.Orders
-                .Include(o => o.Basket)
-                .FirstOrDefault(o => o.Basket.CustomerId == customerId);
+            return _context.Orders.Where(o => o.Basket.CustomerId == customerId).OrderBy(o => o.OrderDate).ToList();
         }
 
         public Basket GetBasketById(Guid basketId)
         {
             return _context.Baskets.FirstOrDefault(b => b.Id == basketId);
         }
-        
+
         public bool BasketExists(Guid basketId)
         {
             return _context.Baskets.Any(b => b.Id == basketId);

@@ -8,8 +8,8 @@ namespace WebMart.Microservices.OrdersService.Repos.Interfaces
         ICollection<Basket> GetAllBaskets();
         Basket GetBasketById(Guid basketId);
         void CreateBasket(Basket basket);
-        void UpdateBasket(Basket basket);
         void DeleteBasket(Basket basket);
+        void UpdateBasket(Basket basket);
         bool BasketExists(Guid basketId);
     }
 }

@@ -137,7 +137,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpPut("[action]", Name = "UpdateSubCategory")]
-        public ActionResult UpdateSubCategory([FromQuery] Guid id, [FromBody] SubCategoryCreateDto subCategoryCreateDto)
+        public ActionResult UpdateSubCategory([FromQuery] Guid id, [FromBody] SubCategoryUpdateDto subCategoryUpdateDto)
         {
             Console.WriteLine($"--> Updating SubCategory with Id: {id}");
 
@@ -148,7 +148,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
                 return NotFound();
             }
 
-            _mapper.Map(subCategoryCreateDto, subCategory);
+            _mapper.Map(subCategoryUpdateDto, subCategory);
             _repository.UpdateSubCategory(subCategory);
             _repository.SaveChanges();
 

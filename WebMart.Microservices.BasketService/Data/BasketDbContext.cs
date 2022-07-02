@@ -24,7 +24,7 @@ namespace WebMart.Microservices.BasketService.Data
 
             modelBuilder
                 .Entity<Basket>()
-                .Property(b => b.IsOrdered)
+                .Property(b => b.IsClosed)
                 .HasDefaultValue(false);
         }
     }

@@ -6,16 +6,18 @@ namespace WebMart.Microservices.BasketService.Repos.Interfaces
     {
         bool SaveChanges();
         ICollection<Basket> GetAllBaskets();
-        ICollection<Basket> GetAllBasketsDetailed();
         Basket GetBasketById(Guid basketId);
-        Basket GetBasketByIdDetailed(Guid basketId);
-        Basket GetBasketByCustomerId(int customerId, bool isOrdered);
-        Basket GetBasketByCustomerIdDetailed(int customerId, bool isOrdered);
+        ICollection<Basket> GetAllBasketsByCustomerId(int customerId);
+        Basket GetOpenBasketByCustomerId(int customerId);
+        ICollection<Product> GetProductsInBasket(Guid basketId);
         void CreateBasket(Basket basket);
         void DeleteBasket(Basket basket);
         void UpdateBasket(Basket basket);
+        bool BasketExists(Guid basketId);
+        bool OpenBasketForCustomerExists(int customerId);
 
         Product GetProductById(Guid productId);
+        bool ProductExists(Guid productId);
         void CreateMissingProduct(Product product);
     }
 }

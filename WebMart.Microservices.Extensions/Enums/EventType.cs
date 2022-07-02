@@ -4,9 +4,10 @@ namespace WebMart.Microservices.Extensions.Enums
     {
         ProductAdded,
         ProductDeleted,
-        ProductModified,
+        ProductUpdated,
         BasketAdded,
         BasketDeleted,
+        BasketUpdated,
         OrderAdded,
         OrderDeleted,
         Undetremined

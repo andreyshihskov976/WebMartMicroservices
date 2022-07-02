@@ -12,7 +12,7 @@ namespace WebMart.Microservices.BasketService.Models
         public int CustomerId { get; set; }
 
         [Required]
-        public bool IsOrdered {get; set;}
+        public bool IsClosed {get; set;}
 
         public ICollection<Product> Products { get; set; } = new List<Product>();
     }

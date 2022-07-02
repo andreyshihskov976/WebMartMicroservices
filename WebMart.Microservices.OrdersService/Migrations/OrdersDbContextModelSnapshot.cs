@@ -31,6 +31,12 @@ namespace WebMart.Microservices.OrdersService.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ProductCount")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("TotalCost")
+                        .HasColumnType("double precision");
+
                     b.HasKey("Id");
 
                     b.ToTable("Baskets");

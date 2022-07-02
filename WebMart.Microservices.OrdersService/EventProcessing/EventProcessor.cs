@@ -32,6 +32,9 @@ namespace WebMart.Microservices.OrdersService.EventProcessing
                 case EventType.BasketDeleted:
                     DeleteBasket(message);
                     break;
+                    case EventType.BasketUpdated:
+                    UpdateBasket(message);
+                    break;
                 default:
                     Console.WriteLine($"There is no option for {eventType} event");
                     break;
@@ -88,8 +91,8 @@ namespace WebMart.Microservices.OrdersService.EventProcessing
 
                 try
                 {
-                    var basket = repo.GetBasketById(basketPublishedDto.Id);
-                    if (basket != null)
+                    var basket = _mapper.Map<Basket>(basketPublishedDto);
+                    if (repo.BasketExists(basket.Id))
                     {
                         repo.DeleteBasket(basket);
                         repo.SaveChanges();
@@ -97,12 +100,41 @@ namespace WebMart.Microservices.OrdersService.EventProcessing
                     }
                     else
                     {
-                        Console.WriteLine("--> Basket already not exists...");
+                        Console.WriteLine("--> Basket is already not exists...");
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"--> Could not delete Basket from DB: {ex.Message}");
+                }
+            }
+        }
+
+        private void UpdateBasket(string basketPublishedMessage)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var repo = scope.ServiceProvider.GetRequiredService<IBasketRepo>();
+
+                var basketPublishedDto = JsonSerializer.Deserialize<BasketPublishedDto>(basketPublishedMessage);
+
+                try
+                {
+                    var basket = _mapper.Map<Basket>(basketPublishedDto);
+                    if (repo.BasketExists(basket.Id))
+                    {
+                        repo.UpdateBasket(basket);
+                        repo.SaveChanges();
+                        Console.WriteLine("--> Basket updated!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("--> Basket is not exists...");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"--> Could not update Basket to DB: {ex.Message}");
                 }
             }
         }

@@ -46,7 +46,7 @@ namespace WebMart.Microservices.BasketService.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsOrdered")
+                    b.Property<bool>("IsClosed")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
@@ -62,7 +62,11 @@ namespace WebMart.Microservices.BasketService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Model")
                         .IsRequired()
                         .HasColumnType("text");
 
