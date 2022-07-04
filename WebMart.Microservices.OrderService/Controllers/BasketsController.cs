@@ -1,8 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using WebMart.Microservices.Extensions.DTOs.Basket;
-using WebMart.Microservices.Extensions.Pages;
+using WebMart.Extensions.DTOs.Basket;
+using WebMart.Extensions.Pages;
 using WebMart.Microservices.OrdersService.Models;
 using WebMart.Microservices.OrdersService.Repos.Interfaces;
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.Extensions.AsyncDataServices;
+using Microsoft.IdentityModel.Tokens;
+using WebMart.Extensions.AsyncDataServices;
 using WebMart.Microservices.CatalogService.Data;
 using WebMart.Microservices.CatalogService.Repos;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
@@ -7,6 +8,34 @@ using WebMart.Microservices.CatalogService.Repos.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = builder.Configuration
+            .GetSection("IdentityParameters")
+            .GetValue<string>("IdentityServerHost");
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("ApiScope", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim
+            (
+                "scope",
+                builder.Configuration
+                    .GetSection("IdentityParameters")
+                    .GetValue<string>("Scope")
+            );
+        });
+    });
+
 builder.Services.AddDbContext<CatalogDbContext>(opt =>
     opt.UseNpgsql(
         builder.Configuration.GetValue<string>("DbConnection")
@@ -17,12 +46,6 @@ builder.Services.AddScoped<ISubCategoryRepo, SubCategoryRepo>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 
 builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
-
-// builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
-    // .ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
-    //     {
-    //        ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
-    //     });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -43,8 +66,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+// app.UseEndpoints(endpoints =>
+// {
+//     endpoints.MapControllers()
+//         .RequireAuthorization("ApiScope");
+// });
 
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

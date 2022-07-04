@@ -1,8 +1,8 @@
 using AutoMapper;
 using WebMart.Microservices.CatalogService.Models;
-using WebMart.Microservices.Extensions.DTOs.Category;
-using WebMart.Microservices.Extensions.DTOs.Product;
-using WebMart.Microservices.Extensions.DTOs.SubCategory;
+using WebMart.Extensions.DTOs.Category;
+using WebMart.Extensions.DTOs.Product;
+using WebMart.Extensions.DTOs.SubCategory;
 
 namespace WebMart.Microservices.CatalogService.MapperProfiles
 {

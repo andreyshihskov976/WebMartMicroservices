@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using System.Text.Json;
-using WebMart.Microservices.Extensions.DTOs.Events;
-using WebMart.Microservices.Extensions.DTOs.Basket;
-using WebMart.Microservices.Extensions.Enums;
+using WebMart.Extensions.DTOs.Events;
+using WebMart.Extensions.DTOs.Basket;
+using WebMart.Extensions.Enums;
 using WebMart.Microservices.OrdersService.Repos.Interfaces;
 using WebMart.Microservices.OrdersService.Models;
-using WebMart.Microservices.Extensions.EventProcessing;
+using WebMart.Extensions.EventProcessing;
 
 namespace WebMart.Microservices.OrdersService.EventProcessing
 {

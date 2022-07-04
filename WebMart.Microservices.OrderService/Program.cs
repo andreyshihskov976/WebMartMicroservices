@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.Extensions.AsyncDataServices;
-using WebMart.Microservices.Extensions.EventProcessing;
-using WebMart.Microservices.Extensions.SyncDataServices;
+using Microsoft.IdentityModel.Tokens;
+using WebMart.Extensions.AsyncDataServices;
+using WebMart.Extensions.EventProcessing;
+using WebMart.Extensions.SyncDataServices;
 using WebMart.Microservices.OrdersService.Data;
 using WebMart.Microservices.OrdersService.EventProcessing;
 using WebMart.Microservices.OrdersService.Repos;
@@ -10,6 +11,34 @@ using WebMart.Microservices.OrdersService.Repos.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = builder.Configuration
+            .GetSection("IdentityParameters")
+            .GetValue<string>("IdentityServerHost");
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("ApiScope", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim
+            (
+                "scope",
+                builder.Configuration
+                    .GetSection("IdentityParameters")
+                    .GetValue<string>("Scope")
+            );
+        });
+    });
+
 builder.Services.AddDbContext<OrdersDbContext>(opt =>
     opt.UseNpgsql(
         builder.Configuration.GetValue<string>("DbConnection")

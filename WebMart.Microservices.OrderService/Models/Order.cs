@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using WebMart.Microservices.Extensions.Enums;
+using WebMart.Extensions.Enums;
 
 namespace WebMart.Microservices.OrdersService.Models
 {

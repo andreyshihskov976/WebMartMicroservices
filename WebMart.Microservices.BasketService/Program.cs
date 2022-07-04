@@ -1,17 +1,44 @@
 using Microsoft.EntityFrameworkCore;
-using WebMart.Microservices.Extensions.SyncDataServices;
-using WebMart.Microservices.Extensions.AsyncDataServices;
+using WebMart.Extensions.SyncDataServices;
+using WebMart.Extensions.AsyncDataServices;
 using WebMart.Microservices.BasketService.Data;
 using WebMart.Microservices.BasketService.EventProcessing;
 using WebMart.Microservices.BasketService.Repos;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
-using WebMart.Microservices.Extensions.EventProcessing;
-using WebMart.Microservices.BasketService.Models;
-using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Extensions.EventProcessing;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = builder.Configuration
+            .GetSection("IdentityParameters")
+            .GetValue<string>("IdentityServerHost");
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("ApiScope", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim
+            (
+                "scope",
+                builder.Configuration
+                    .GetSection("IdentityParameters")
+                    .GetValue<string>("Scope")
+            );
+        });
+    });
+
 builder.Services.AddDbContext<BasketDbContext>(opt =>
     opt.UseNpgsql(
         builder.Configuration.GetValue<string>("DbConnection")
@@ -46,9 +73,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+// app.UseEndpoints(endpoints =>
+// {
+//     endpoints.MapControllers()
+//         .RequireAuthorization("ApiScope");
+// });
+
+// app.UseHttpsRedirection();
 
 app.MapControllers();
 

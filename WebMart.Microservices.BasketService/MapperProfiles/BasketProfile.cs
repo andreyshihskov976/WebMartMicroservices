@@ -1,7 +1,7 @@
 using AutoMapper;
 using WebMart.Microservices.BasketService.Models;
-using WebMart.Microservices.Extensions.DTOs.Basket;
-using WebMart.Microservices.Extensions.DTOs.Product;
+using WebMart.Extensions.DTOs.Basket;
+using WebMart.Extensions.DTOs.Product;
 
 namespace WebMart.Microservices.BasketService.MapperProfiles
 {

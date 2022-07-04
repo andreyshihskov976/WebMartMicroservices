@@ -1,12 +1,13 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using WebMart.Microservices.Extensions.AsyncDataServices;
+using WebMart.Extensions.AsyncDataServices;
 using WebMart.Microservices.CatalogService.Models;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
-using WebMart.Microservices.Extensions.DTOs.Product;
-using WebMart.Microservices.Extensions.Pages;
-using WebMart.Microservices.Extensions.Enums;
+using WebMart.Extensions.DTOs.Product;
+using WebMart.Extensions.Pages;
+using WebMart.Extensions.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebMart.Microservices.CatalogService.Controllers
 {
@@ -82,6 +83,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetPublishedProductById")]
+        [Authorize]
         public ActionResult<ProductPublishedDto> GetPublishedProductById([FromQuery] Guid id)
         {
             Console.WriteLine($"--> Getting published Product with Id: {id}...");
@@ -226,7 +228,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _repository.UpdateProduct(product);
             _repository.SaveChanges();
 
-            SendAsyncMessage(product, EventType.ProductModified);
+            SendAsyncMessage(product, EventType.ProductUpdated);
 
             var productReadDto = _mapper.Map<ProductReadDto>(product);
 

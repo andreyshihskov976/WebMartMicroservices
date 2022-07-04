@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using WebMart.Microservices.CatalogService.Models;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
-using WebMart.Microservices.Extensions.DTOs.Category;
-using WebMart.Microservices.Extensions.Pages;
+using WebMart.Extensions.DTOs.Category;
+using WebMart.Extensions.Pages;
 
 namespace WebMart.Microservices.CatalogService.Controllers
 {

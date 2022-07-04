@@ -1,12 +1,12 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using WebMart.Microservices.Extensions.AsyncDataServices;
-using WebMart.Microservices.Extensions.DTOs.Basket;
-using WebMart.Microservices.Extensions.DTOs.Order;
-using WebMart.Microservices.Extensions.Enums;
-using WebMart.Microservices.Extensions.Pages;
-using WebMart.Microservices.Extensions.SyncDataServices;
+using WebMart.Extensions.AsyncDataServices;
+using WebMart.Extensions.DTOs.Basket;
+using WebMart.Extensions.DTOs.Order;
+using WebMart.Extensions.Enums;
+using WebMart.Extensions.Pages;
+using WebMart.Extensions.SyncDataServices;
 using WebMart.Microservices.OrdersService.Models;
 using WebMart.Microservices.OrdersService.Repos.Interfaces;
 

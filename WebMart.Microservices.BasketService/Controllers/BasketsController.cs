@@ -2,13 +2,14 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
-using WebMart.Microservices.Extensions.DTOs.Basket;
-using WebMart.Microservices.Extensions.AsyncDataServices;
-using WebMart.Microservices.Extensions.SyncDataServices;
-using WebMart.Microservices.Extensions.DTOs.Product;
-using WebMart.Microservices.Extensions.Enums;
+using WebMart.Extensions.DTOs.Basket;
+using WebMart.Extensions.AsyncDataServices;
+using WebMart.Extensions.SyncDataServices;
+using WebMart.Extensions.DTOs.Product;
+using WebMart.Extensions.Enums;
 using Newtonsoft.Json;
-using WebMart.Microservices.Extensions.Pages;
+using WebMart.Extensions.Pages;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
@@ -73,7 +74,8 @@ namespace WebMart.Microservices.BasketService.Controllers
             return NotFound();
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[action]", Name = "GetPublishedBasketById")]
+        [Authorize]
         public ActionResult<BasketPublishedDto> GetPublishedBasketById(Guid id)
         {
             Console.WriteLine($"--> Gettng published Basket with id: {id}...");

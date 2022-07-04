@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebMart.Microservices.OrdersService.Models;
-using WebMart.Microservices.Extensions.Enums;
+using WebMart.Extensions.Enums;
 
 namespace WebMart.Microservices.OrdersService.Data
 {

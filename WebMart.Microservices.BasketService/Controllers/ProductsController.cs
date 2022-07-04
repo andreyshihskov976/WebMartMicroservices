@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
-using WebMart.Microservices.Extensions.DTOs.Product;
-using WebMart.Microservices.Extensions.Pages;
+using WebMart.Extensions.DTOs.Product;
+using WebMart.Extensions.Pages;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {

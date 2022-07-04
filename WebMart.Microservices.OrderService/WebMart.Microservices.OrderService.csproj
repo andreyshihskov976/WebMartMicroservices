@@ -24,7 +24,7 @@
     <PackageReference Include="RabbitMQ" Version="3.6.2" />
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-    <ProjectReference Include="..\WebMart.Microservices.Extensions\WebMart.Microservices.Extensions.csproj" />
+    <ProjectReference Include="..\WebMart.Extensions\WebMart.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

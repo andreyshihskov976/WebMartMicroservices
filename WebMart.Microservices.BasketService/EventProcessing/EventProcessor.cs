@@ -2,11 +2,11 @@
 using System.Text.Json;
 using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
-using WebMart.Microservices.Extensions.DTOs.Events;
-using WebMart.Microservices.Extensions.DTOs.Product;
-using WebMart.Microservices.Extensions.DTOs.Order;
-using WebMart.Microservices.Extensions.EventProcessing;
-using WebMart.Microservices.Extensions.Enums;
+using WebMart.Extensions.DTOs.Events;
+using WebMart.Extensions.DTOs.Product;
+using WebMart.Extensions.DTOs.Order;
+using WebMart.Extensions.EventProcessing;
+using WebMart.Extensions.Enums;
 
 namespace WebMart.Microservices.BasketService.EventProcessing
 {
