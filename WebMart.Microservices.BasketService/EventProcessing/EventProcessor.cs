@@ -160,7 +160,7 @@ namespace WebMart.Microservices.BasketService.EventProcessing
                     var basketInRepo = repo.GetBasketById(orderPublishedDto.BasketId);
                     if (basketInRepo != null)
                     {
-                        basketInRepo.IsClosed = isOrdered;
+                        basketInRepo.IsOrdered = isOrdered;
                         repo.UpdateBasket(basketInRepo);
                         repo.SaveChanges();
                         Console.WriteLine("--> Basket updated!");

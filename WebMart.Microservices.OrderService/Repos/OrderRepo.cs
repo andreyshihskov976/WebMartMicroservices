@@ -43,17 +43,17 @@ namespace WebMart.Microservices.OrdersService.Repos
 
         public ICollection<Order> GetAllOrders()
         {
-            return _context.Orders.OrderBy(o => o.OrderDate).ToList();
+            return _context.Orders.Include(o => o.Basket).OrderBy(o => o.OrderDate).ToList();
         }
 
         public Order GetOrderById(Guid orderId)
         {
-            return _context.Orders.FirstOrDefault(o => o.Id == orderId);
+            return _context.Orders.Include(o => o.Basket).FirstOrDefault(o => o.Id == orderId);
         }
 
         public ICollection<Order> GetOrdersByCustomerId(Guid customerId)
         {
-            return _context.Orders.Where(o => o.Basket.CustomerId == customerId).OrderBy(o => o.OrderDate).ToList();
+            return _context.Orders.Include(o => o.Basket).Where(o => o.Basket.CustomerId == customerId).OrderBy(o => o.OrderDate).ToList();
         }
 
         public Basket GetBasketById(Guid basketId)

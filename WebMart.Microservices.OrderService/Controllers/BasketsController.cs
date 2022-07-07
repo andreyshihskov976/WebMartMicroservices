@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using WebMart.Extensions.DTOs.Basket;
+using WebMart.Extensions.DTOs.Order;
 using WebMart.Extensions.Pages;
-using WebMart.Microservices.OrdersService.Models;
 using WebMart.Microservices.OrdersService.Repos.Interfaces;
 
 namespace Namespace
@@ -24,14 +24,14 @@ namespace Namespace
         }
 
         [HttpGet("[action]", Name = "GetAllProducts")]
-        public ActionResult<ICollection<BasketReadDto>> GetBaskets([FromQuery] PageParams parameters)
+        public ActionResult<ICollection<OrderBasketReadDto>> GetBaskets([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting all Baskets...");
 
             var baskets = _repository.GetAllBaskets();
 
-            var basketsDtos = PagedList<BasketReadDto>.ToPagedList(
-                _mapper.Map<ICollection<BasketReadDto>>(baskets),
+            var basketsDtos = PagedList<OrderBasketReadDto>.ToPagedList(
+                _mapper.Map<ICollection<OrderBasketReadDto>>(baskets),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -52,7 +52,7 @@ namespace Namespace
         }
 
         [HttpGet("[action]", Name = "GetProductById")]
-        public ActionResult<Basket> GetBasketById([FromQuery] Guid id)
+        public ActionResult<BasketReadDto> GetBasketById([FromQuery] Guid id)
         {
             Console.WriteLine($"--> Getting Basket with id: {id}...");
 
@@ -60,7 +60,7 @@ namespace Namespace
 
             if(basket != null)
             {
-                Ok(basket);
+                return Ok(_mapper.Map<OrderBasketReadDto>(basket));
             }
 
             return NotFound();

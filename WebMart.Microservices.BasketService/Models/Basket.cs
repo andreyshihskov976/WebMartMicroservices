@@ -12,8 +12,13 @@ namespace WebMart.Microservices.BasketService.Models
         public Guid CustomerId { get; set; }
 
         [Required]
-        public bool IsClosed {get; set;}
+        public Guid ProductId { get; set; }
 
-        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public int Count { get; set; }
+
+        [Required]
+        public bool IsOrdered { get; set; }
+
+        public Product Product { get; set; }
     }
 }

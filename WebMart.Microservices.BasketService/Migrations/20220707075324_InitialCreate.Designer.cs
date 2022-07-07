@@ -12,7 +12,7 @@ using WebMart.Microservices.BasketService.Data;
 namespace WebMart.Microservices.BasketService.Migrations
 {
     [DbContext(typeof(BasketDbContext))]
-    [Migration("20220706131358_InitialCreate")]
+    [Migration("20220707075324_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,36 +24,31 @@ namespace WebMart.Microservices.BasketService.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("BasketProduct", b =>
-                {
-                    b.Property<Guid>("BasketsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductsId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("BasketsId", "ProductsId");
-
-                    b.HasIndex("ProductsId");
-
-                    b.ToTable("BasketProduct");
-                });
-
             modelBuilder.Entity("WebMart.Microservices.BasketService.Models.Basket", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("Count")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsClosed")
+                    b.Property<bool>("IsOrdered")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Baskets");
                 });
@@ -80,19 +75,20 @@ namespace WebMart.Microservices.BasketService.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("BasketProduct", b =>
+            modelBuilder.Entity("WebMart.Microservices.BasketService.Models.Basket", b =>
                 {
-                    b.HasOne("WebMart.Microservices.BasketService.Models.Basket", null)
-                        .WithMany()
-                        .HasForeignKey("BasketsId")
+                    b.HasOne("WebMart.Microservices.BasketService.Models.Product", "Product")
+                        .WithMany("Baskets")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebMart.Microservices.BasketService.Models.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("WebMart.Microservices.BasketService.Models.Product", b =>
+                {
+                    b.Navigation("Baskets");
                 });
 #pragma warning restore 612, 618
         }

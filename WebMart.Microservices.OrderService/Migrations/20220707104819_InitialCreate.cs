@@ -15,7 +15,8 @@ namespace WebMart.Microservices.OrderService.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductCount = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Count = table.Column<int>(type: "integer", nullable: false),
                     TotalCost = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>

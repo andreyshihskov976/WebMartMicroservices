@@ -10,13 +10,12 @@ using WebMart.Extensions.Enums;
 using Newtonsoft.Json;
 using WebMart.Extensions.Pages;
 using Microsoft.AspNetCore.Authorization;
-using IdentityModel;
 using System.Security.Claims;
+using IdentityModel;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
     [ApiController]
-    [Authorize("users_allowed")]
     [Route("api/[controller]")]
     public class BasketsController : ControllerBase
     {
@@ -63,12 +62,20 @@ namespace WebMart.Microservices.BasketService.Controllers
             return Ok(basketsDtos);
         }
 
+        [Authorize("users_allowed")]
         [HttpGet("[action]", Name = "GetBasketById")]
         public ActionResult<BasketReadDto> GetBasketById(Guid id)
         {
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             Console.WriteLine($"--> Gettng Basket with id: {id}...");
 
             var basket = _repository.GetBasketById(id);
+
+            if(!basket.CustomerId.Equals(customerId) && User.FindFirst(JwtClaimTypes.Scope)?.Value != "admin_permissions")
+            {
+                return Forbid();
+            }
 
             if (basket != null)
             {
@@ -94,67 +101,60 @@ namespace WebMart.Microservices.BasketService.Controllers
             return NotFound();
         }
 
-        [HttpGet("[action]", Name = "GetBasketByCustomerId")]
-        public ActionResult<BasketReadDto> GetOpenBasketByCustomerId()
+        [Authorize("users_allowed")]
+        [HttpGet("[action]", Name = "GetBasketsByCustomerId")]
+        public ActionResult<ICollection<BasketReadDto>> GetBasketsByCustomerId([FromQuery] PageParams parameters)
         {
             var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            Console.WriteLine($"--> Gettng Basket with id of customer: {customerId}...");
+            Console.WriteLine($"--> Getting all Baskets for Customer with id: {customerId}...");
 
-            var basket = _repository.GetOpenBasketByCustomerId(customerId);
+            var baskets = _repository.GetBasketsByCustomerId(customerId);
 
-            if (basket != null)
-            {
-                return Ok(_mapper.Map<BasketReadDto>(basket));
-            }
-
-            return NotFound();
-        }
-
-        [HttpGet("[action]", Name = "GetProductsInBasket")]
-        public ActionResult<ICollection<ProductReadDto>> GetProductsInBasket([FromQuery] Guid basketId, [FromQuery] PageParams parameters)
-        {
-            Console.WriteLine($"--> Getting Product from basket with id: {basketId}");
-
-            var products = _repository.GetProductsInBasket(basketId);
-
-            var productsDtos = PagedList<ProductReadDto>.ToPagedList(
-                _mapper.Map<ICollection<ProductReadDto>>(products),
+            var basketsDtos = PagedList<BasketReadDto>.ToPagedList(
+                _mapper.Map<ICollection<BasketReadDto>>(baskets),
                 parameters.PageNumber,
                 parameters.PageSize
             );
 
             var meta = new
             {
-                productsDtos.TotalCount,
-                productsDtos.PageSize,
-                productsDtos.CurrentPage,
-                productsDtos.TotalPages,
-                productsDtos.HasNext,
-                productsDtos.HasPrevious
+                basketsDtos.TotalCount,
+                basketsDtos.PageSize,
+                basketsDtos.CurrentPage,
+                basketsDtos.TotalPages,
+                basketsDtos.HasNext,
+                basketsDtos.HasPrevious
             };
 
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(meta));
 
-            return Ok(productsDtos);
+            return Ok(basketsDtos);
         }
 
+        [Authorize("users_allowed")]
         [HttpPost("[action]", Name = "CreateBasket")]
-        public ActionResult CreateBasket()
+        public async Task<ActionResult> CreateBasketAsync([FromQuery] Guid productId)
         {
             var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            var basketCreateDto = new BasketCreateDto { CustomerId = customerId };
-
-            Console.WriteLine($"--> Creating Basket for Customer with id: {basketCreateDto.CustomerId}...");
-
-            if (_repository.OpenBasketForCustomerExists(basketCreateDto.CustomerId))
+            if (!_repository.ProductExists(productId))
             {
-                return RedirectToAction(
-                    nameof(GetOpenBasketByCustomerId),
-                    new { customerId = basketCreateDto.CustomerId }
-                );
+                var productPublishedDto = await GetProductFromCatalogServiceAsync(productId);
+                if (productPublishedDto != null)
+                {
+                    var product = _mapper.Map<Product>(productPublishedDto);
+                    _repository.CreateMissingProduct(product);
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
+
+            var basketCreateDto = new BasketCreateDto { CustomerId = customerId, ProductId = productId };
+
+            Console.WriteLine($"--> Adding Product with id: {basketCreateDto.ProductId} in Basket for Customer with id: {basketCreateDto.CustomerId}...");
 
             var basket = _mapper.Map<Basket>(basketCreateDto);
             _repository.CreateBasket(basket);
@@ -171,21 +171,29 @@ namespace WebMart.Microservices.BasketService.Controllers
             );
         }
 
+        [Authorize("users_allowed")]
         [HttpDelete("[action]", Name = "DeleteBasket")]
         public ActionResult DeleteBasket([FromQuery] Guid id)
         {
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             Console.WriteLine("--> Deleting Basket...");
 
             var basket = _repository.GetBasketById(id);
+
+            if(!basket.CustomerId.Equals(customerId))
+            {
+                return Forbid();
+            }
 
             if (basket == null)
             {
                 return NotFound();
             }
 
-            if (basket.IsClosed)
+            if (basket.IsOrdered)
             {
-                return BadRequest();
+                return Conflict();
             }
 
             _repository.DeleteBasket(basket);
@@ -196,90 +204,45 @@ namespace WebMart.Microservices.BasketService.Controllers
             return NoContent();
         }
 
-        [HttpPost("[action]", Name = "AddProductToBasket")]
-        public async Task<ActionResult> AddProductToBasketAsync([FromQuery] Guid basketId, [FromQuery] Guid productId)
+        [Authorize("users_allowed")]
+        [HttpPut("[action]", Name = "UpdateBasket")]
+        public ActionResult UpdateBasket([FromQuery] Guid id, [FromBody] BasketUpdateDto basketUpdateDto)
         {
-            Console.WriteLine($"--> Adding Product with id: {basketId} in Basket with id: {productId}");
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            var basket = _repository.GetBasketById(basketId);
+            Console.WriteLine("--> Deleting Basket...");
+
+            var basket = _repository.GetBasketById(id);
+
+            if(!basket.CustomerId.Equals(customerId))
+            {
+                return Forbid();
+            }
 
             if (basket == null)
             {
                 return NotFound();
             }
 
-            if (basket.IsClosed)
+            if (basket.IsOrdered)
             {
-                return BadRequest();
+                return Conflict();
             }
 
-            var product = _repository.GetProductById(productId);
-
-            if (product == null)
-            {
-                //Add missing Product to local Db
-                var productPublishedDto = await GetProductFromCatalogServiceAsync(productId);
-                if (productPublishedDto != null)
-                {
-                    product = _mapper.Map<Product>(productPublishedDto);
-                    _repository.CreateMissingProduct(product);
-                }
-                else
-                {
-                    return NotFound();
-                }
-            }
-
-            if (basket.Products == null)
-            {
-                basket.Products = new List<Product>();
-            }
-
-            basket.Products.Add(product);
-
+            _mapper.Map(basketUpdateDto, basket);
             _repository.UpdateBasket(basket);
             _repository.SaveChanges();
 
-            SendAsyncMessage(basket, EventType.BasketDeleted);
+            SendAsyncMessage(basket, EventType.BasketUpdated);
 
             return NoContent();
         }
 
-        [HttpDelete("[action]", Name = "RemoveProductFromBasket")]
-        public ActionResult RemoveProductFromBasket([FromQuery] Guid basketId, [FromQuery] Guid productId)
-        {
-            Console.WriteLine($"--> Removing Product with id: {basketId} in Basket with id: {productId}");
-
-            var basket = _repository.GetBasketById(basketId);
-
-            if (basket == null)
-            {
-                return NotFound();
-            }
-
-            if (basket.IsClosed)
-            {
-                return BadRequest();
-            }
-
-            var product = _repository.GetProductById(productId);
-
-            basket.Products.Remove(product);
-
-            _repository.UpdateBasket(basket);
-            _repository.SaveChanges();
-
-            SendAsyncMessage(basket, EventType.BasketDeleted);
-
-            return NoContent();
-        }
-
-
-        private void SendAsyncMessage(Basket basketReadDto, EventType eventType)
+        private void SendAsyncMessage(Basket basket, EventType eventType)
         {
             try
             {
-                var basketPublishedDto = _mapper.Map<BasketPublishedDto>(basketReadDto);
+                var basketPublishedDto = _mapper.Map<BasketPublishedDto>(basket);
                 basketPublishedDto.Event = eventType;
                 _messageBusClient.Publish(basketPublishedDto);
             }

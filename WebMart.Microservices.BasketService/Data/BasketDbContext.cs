@@ -12,20 +12,26 @@ namespace WebMart.Microservices.BasketService.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             //Link for Product -> Basket
             modelBuilder
                 .Entity<Product>()
                 .HasMany(p => p.Baskets)
-                .WithMany(p => p.Products);
+                .WithOne(p => p.Product);
             modelBuilder
                 .Entity<Basket>()
-                .HasMany(p => p.Products)
+                .HasOne(p => p.Product)
                 .WithMany(p => p.Baskets);
 
             modelBuilder
                 .Entity<Basket>()
-                .Property(b => b.IsClosed)
+                .Property(b => b.IsOrdered)
                 .HasDefaultValue(false);
+            modelBuilder
+                .Entity<Basket>()
+                .Property(b => b.Count)
+                .HasDefaultValue(1);
         }
     }
 }

@@ -15,7 +15,6 @@ using WebMart.Microservices.OrdersService.Repos.Interfaces;
 namespace Namespace
 {
     [ApiController]
-    [Authorize("users_allowed")]
     [Route("api/[controller]")]
     public class OrdersController : ControllerBase
     {
@@ -33,6 +32,7 @@ namespace Namespace
             _httpDataService = httpDataService;
         }
 
+        [Authorize("admins_only")]
         [HttpGet("[action]", Name = "GetOrders")]
         public ActionResult<ICollection<OrderReadDto>> GetOrders([FromQuery] PageParams parameters)
         {
@@ -40,8 +40,8 @@ namespace Namespace
 
             var orders = _repository.GetAllOrders();
 
-            var ordersDtos = PagedList<BasketReadDto>.ToPagedList(
-                _mapper.Map<ICollection<BasketReadDto>>(orders),
+            var ordersDtos = PagedList<OrderReadDto>.ToPagedList(
+                _mapper.Map<ICollection<OrderReadDto>>(orders),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -61,6 +61,7 @@ namespace Namespace
             return Ok(ordersDtos);
         }
 
+        [Authorize("users_allowed")]
         [HttpGet("[action]", Name = "GetOrderById")]
         public ActionResult<OrderReadDto> GetOrderById(Guid id)
         {
@@ -76,8 +77,9 @@ namespace Namespace
             return NotFound();
         }
 
+        [Authorize("users_allowed")]
         [HttpGet("[action]", Name = "GetOrdersByCustomerId")]
-        public ActionResult<ICollection<OrderDetailedReadDto>> GetOrdersByCustomerId([FromQuery] PageParams parameters)
+        public ActionResult<ICollection<OrderReadDto>> GetOrdersByCustomerId([FromQuery] PageParams parameters)
         {
             var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
@@ -85,8 +87,8 @@ namespace Namespace
 
             var orders = _repository.GetOrdersByCustomerId(customerId);
 
-            var ordersDtos = PagedList<BasketReadDto>.ToPagedList(
-                _mapper.Map<ICollection<BasketReadDto>>(orders),
+            var ordersDtos = PagedList<OrderReadDto>.ToPagedList(
+                _mapper.Map<ICollection<OrderReadDto>>(orders),
                 parameters.PageNumber,
                 parameters.PageSize
             );
@@ -106,9 +108,12 @@ namespace Namespace
             return Ok(ordersDtos);
         }
 
+        [Authorize("users_allowed")]
         [HttpPost("[action]", Name = "CreateOrder")]
         public async Task<ActionResult> CreateOrderAsync([FromBody] OrderCreateDto orderCreateDto)
         {
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             Console.WriteLine($"--> Creating Order for Basket with id: {orderCreateDto.BasketId}...");
 
             if (!_repository.BasketExists(orderCreateDto.BasketId))
@@ -118,6 +123,10 @@ namespace Namespace
                 {
                     var basket = _mapper.Map<Basket>(basketPublishedDto);
                     _repository.CreateMissingBasket(basket);
+                    if (basket.CustomerId != customerId)
+                    {
+                        return Forbid();
+                    }
                 }
                 else
                 {
@@ -143,10 +152,13 @@ namespace Namespace
             );
         }
 
+        [Authorize("users_allowed")]
         [HttpDelete("[action]", Name = "DeleteOrder")]
         public ActionResult DeleteOrder([FromQuery] Guid id)
         {
-            Console.WriteLine("--> Deleting Basket...");
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            Console.WriteLine("--> Deleting Order...");
 
             var order = _repository.GetOrderById(id);
 
@@ -155,12 +167,40 @@ namespace Namespace
                 return NotFound();
             }
 
+            if (order.Basket.CustomerId != customerId)
+            {
+                return Forbid();
+            }
+
+            if (order.Status >= OrderStatus.AwaitingShipment)
+            {
+                return Conflict();
+            }
+
             _repository.DeleteOrder(order);
             _repository.SaveChanges();
 
             SendAsyncMessage(order, EventType.OrderDeleted);
 
             var basketReadDto = _mapper.Map<OrderReadDto>(order);
+
+            return NoContent();
+        }
+
+        [Authorize("admins_only")]
+        [HttpPut("[action]", Name = "UpdateOrder")]
+        public ActionResult UpdateOrder(Guid id, [FromBody] OrderUpdateDto orderUpdateDto)
+        {
+            var order = _repository.GetOrderById(id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            _mapper.Map(orderUpdateDto, order);
+            _repository.UpdateOrder(order);
+            _repository.SaveChanges();
 
             return NoContent();
         }

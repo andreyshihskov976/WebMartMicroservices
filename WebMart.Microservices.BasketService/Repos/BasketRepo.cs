@@ -20,7 +20,6 @@ namespace WebMart.Microservices.BasketService.Repos
             {
                 throw new ArgumentNullException(nameof(basket));
             }
-            basket.Products = new List<Product>();
             _context.Baskets.Add(basket);
         }
 
@@ -44,39 +43,23 @@ namespace WebMart.Microservices.BasketService.Repos
 
         public ICollection<Basket> GetAllBaskets()
         {
-            return _context.Baskets.Include(b => b.Products).OrderBy(b => b.Id).ToList();
+            return _context.Baskets.Include(b => b.Product).OrderBy(b => b.CustomerId).ToList();
         }
 
         public Basket GetBasketById(Guid basketId)
         {
-            return _context.Baskets.Include(b => b.Products).FirstOrDefault(b => b.Id == basketId);
+            return _context.Baskets.Include(b => b.Product).FirstOrDefault(b => b.Id == basketId);
         }
 
-        public ICollection<Basket> GetAllBasketsByCustomerId(Guid customerId)
+        public ICollection<Basket> GetBasketsByCustomerId(Guid customerId)
         {
-            return _context.Baskets.Where(b => b.CustomerId == customerId).OrderBy(b => b.IsClosed).ToList();
-        }
-
-        public Basket GetOpenBasketByCustomerId(Guid customerId)
-        {
-            return _context.Baskets.Include(b => b.Products)
-                .FirstOrDefault(b => b.CustomerId == customerId && !b.IsClosed);
-        }
-
-        public ICollection<Product> GetProductsInBasket(Guid basketId)
-        {
-            var basket = GetBasketById(basketId);
-            return basket.Products.OrderBy(p => p.Manufacturer).ToList();
+            return _context.Baskets.Include(b => b.Product)
+                .Where(b => b.CustomerId == customerId && !b.IsOrdered).ToList();
         }
 
         public bool BasketExists(Guid basketId)
         {
             return _context.Baskets.Any(b => b.Id == basketId);
-        }
-
-        public bool OpenBasketForCustomerExists(Guid customerId)
-        {
-            return _context.Baskets.Any(b => b.CustomerId == customerId && !b.IsClosed);
         }
 
         public bool SaveChanges()

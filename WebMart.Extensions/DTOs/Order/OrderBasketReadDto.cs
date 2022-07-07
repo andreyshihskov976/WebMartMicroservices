@@ -1,14 +1,11 @@
-using WebMart.Extensions.Enums;
-
-namespace WebMart.Extensions.DTOs.Basket
+namespace WebMart.Extensions.DTOs.Order
 {
-    public class BasketPublishedDto
+    public class OrderBasketReadDto
     {
         public Guid Id { get; set; }
         public Guid CustomerId { get; set; }
         public Guid ProductId { get; set; }
         public int Count { get; set; }
         public double TotalCost { get; set; }
-        public EventType Event { get; set; }
     }
 }

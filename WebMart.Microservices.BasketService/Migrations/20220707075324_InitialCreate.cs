@@ -10,19 +10,6 @@ namespace WebMart.Microservices.BasketService.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Baskets",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsClosed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Baskets", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -37,40 +24,34 @@ namespace WebMart.Microservices.BasketService.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BasketProduct",
+                name: "Baskets",
                 columns: table => new
                 {
-                    BasketsId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductsId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Count = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    IsOrdered = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BasketProduct", x => new { x.BasketsId, x.ProductsId });
+                    table.PrimaryKey("PK_Baskets", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BasketProduct_Baskets_BasketsId",
-                        column: x => x.BasketsId,
-                        principalTable: "Baskets",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_BasketProduct_Products_ProductsId",
-                        column: x => x.ProductsId,
+                        name: "FK_Baskets_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BasketProduct_ProductsId",
-                table: "BasketProduct",
-                column: "ProductsId");
+                name: "IX_Baskets_ProductId",
+                table: "Baskets",
+                column: "ProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "BasketProduct");
-
             migrationBuilder.DropTable(
                 name: "Baskets");
 

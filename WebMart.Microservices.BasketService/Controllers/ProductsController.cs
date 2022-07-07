@@ -23,7 +23,7 @@ namespace WebMart.Microservices.BasketService.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("[action]", Name = "GetAllProducts")]
+        [HttpGet("[action]", Name = "GetProducts")]
         public ActionResult<ICollection<ProductReadDto>> GetProducts([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting all Products...");
