@@ -5,11 +5,13 @@ using WebMart.Microservices.BasketService.Models;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
 using WebMart.Extensions.DTOs.Product;
 using WebMart.Extensions.Pages;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Authorize("admins_only")]
+    [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepo _repository;
@@ -58,7 +60,7 @@ namespace WebMart.Microservices.BasketService.Controllers
 
             if(product != null)
             {
-                Ok(_mapper.Map<ProductReadDto>(product));
+                return Ok(_mapper.Map<ProductReadDto>(product));
             }
 
             return NotFound();

@@ -52,12 +52,12 @@ namespace WebMart.Microservices.BasketService.Repos
             return _context.Baskets.Include(b => b.Products).FirstOrDefault(b => b.Id == basketId);
         }
 
-        public ICollection<Basket> GetAllBasketsByCustomerId(int customerId)
+        public ICollection<Basket> GetAllBasketsByCustomerId(Guid customerId)
         {
             return _context.Baskets.Where(b => b.CustomerId == customerId).OrderBy(b => b.IsClosed).ToList();
         }
 
-        public Basket GetOpenBasketByCustomerId(int customerId)
+        public Basket GetOpenBasketByCustomerId(Guid customerId)
         {
             return _context.Baskets.Include(b => b.Products)
                 .FirstOrDefault(b => b.CustomerId == customerId && !b.IsClosed);
@@ -74,7 +74,7 @@ namespace WebMart.Microservices.BasketService.Repos
             return _context.Baskets.Any(b => b.Id == basketId);
         }
 
-        public bool OpenBasketForCustomerExists(int customerId)
+        public bool OpenBasketForCustomerExists(Guid customerId)
         {
             return _context.Baskets.Any(b => b.CustomerId == customerId && !b.IsClosed);
         }

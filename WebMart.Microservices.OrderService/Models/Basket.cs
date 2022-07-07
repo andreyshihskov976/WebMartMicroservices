@@ -9,7 +9,7 @@ namespace WebMart.Microservices.OrdersService.Models
         public Guid Id { get; set; }
 
         [Required]
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
 
         public int ProductCount { get; set; }
 

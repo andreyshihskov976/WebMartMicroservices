@@ -10,11 +10,14 @@ using WebMart.Extensions.Enums;
 using Newtonsoft.Json;
 using WebMart.Extensions.Pages;
 using Microsoft.AspNetCore.Authorization;
+using IdentityModel;
+using System.Security.Claims;
 
 namespace WebMart.Microservices.BasketService.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Authorize("users_allowed")]
+    [Route("api/[controller]")]
     public class BasketsController : ControllerBase
     {
         private readonly IBasketRepo _repository;
@@ -31,7 +34,8 @@ namespace WebMart.Microservices.BasketService.Controllers
             _httpDataService = httpDataService;
         }
 
-        [HttpGet("[action]", Name = "GetAllBaskets")]
+        [Authorize("admins_only")]
+        [HttpGet("[action]", Name = "GetBaskets")]
         public ActionResult<ICollection<BasketReadDto>> GetBaskets([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting all Baskets...");
@@ -74,8 +78,8 @@ namespace WebMart.Microservices.BasketService.Controllers
             return NotFound();
         }
 
+        [Authorize("m2m.communication")]
         [HttpGet("[action]", Name = "GetPublishedBasketById")]
-        [Authorize]
         public ActionResult<BasketPublishedDto> GetPublishedBasketById(Guid id)
         {
             Console.WriteLine($"--> Gettng published Basket with id: {id}...");
@@ -91,8 +95,10 @@ namespace WebMart.Microservices.BasketService.Controllers
         }
 
         [HttpGet("[action]", Name = "GetBasketByCustomerId")]
-        public ActionResult<BasketReadDto> GetOpenBasketByCustomerId([FromQuery] int customerId)
+        public ActionResult<BasketReadDto> GetOpenBasketByCustomerId()
         {
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             Console.WriteLine($"--> Gettng Basket with id of customer: {customerId}...");
 
             var basket = _repository.GetOpenBasketByCustomerId(customerId);
@@ -134,8 +140,12 @@ namespace WebMart.Microservices.BasketService.Controllers
         }
 
         [HttpPost("[action]", Name = "CreateBasket")]
-        public ActionResult CreateBasket([FromBody] BasketCreateDto basketCreateDto)
+        public ActionResult CreateBasket()
         {
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var basketCreateDto = new BasketCreateDto { CustomerId = customerId };
+
             Console.WriteLine($"--> Creating Basket for Customer with id: {basketCreateDto.CustomerId}...");
 
             if (_repository.OpenBasketForCustomerExists(basketCreateDto.CustomerId))

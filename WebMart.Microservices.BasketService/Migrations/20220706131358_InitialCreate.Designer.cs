@@ -12,7 +12,7 @@ using WebMart.Microservices.BasketService.Data;
 namespace WebMart.Microservices.BasketService.Migrations
 {
     [DbContext(typeof(BasketDbContext))]
-    [Migration("20220701112932_InitialCreate")]
+    [Migration("20220706131358_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,8 +45,8 @@ namespace WebMart.Microservices.BasketService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsClosed")
                         .ValueGeneratedOnAdd()

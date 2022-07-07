@@ -15,9 +15,13 @@ namespace WebMart.IdentityServer
         public static IEnumerable<ApiScope> ApiScopes =>
             new List<ApiScope>
             {
-                new ApiScope("CatalogService", "Catalog API"),
-                new ApiScope("BasketService", "Basket API"),
-                new ApiScope("OrderService", "Order API")
+                //Service-2-Service Scopes
+                new ApiScope("catalog", "Catalog API"),
+                new ApiScope("basket", "Basket API"),
+
+                //Client app Scopes
+                new ApiScope("admin_permissions", "Administrator permissions"),
+                new ApiScope("user_permissions", "User permissions"),
             };
 
         public static IEnumerable<Client> Clients =>
@@ -34,34 +38,29 @@ namespace WebMart.IdentityServer
 
                     AllowedScopes =
                     {
-                        "CatalogService",
-                        "BasketService",
-                        "OrderService"
+                        "catalog",
+                        "basket"
                     }
                 },
 
                 // interactive client using code flow
                 new Client
                 {
-                    ClientId = "interactive.client",
+                    ClientId = "application.client",
+                    ClientName = "ResourceOwnerPassword.Client",
+
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     ClientSecrets = { new Secret("49C1A7E1-0C79-4A89-A3D6-A37998FB86B0".Sha256()) },
 
-                    AllowedGrantTypes = GrantTypes.Code,
-
-                    RedirectUris = { "https://localhost:44300/signin-oidc" },
-                    FrontChannelLogoutUri = "https://localhost:44300/signout-oidc",
-                    PostLogoutRedirectUris = { "https://localhost:44300/signout-callback-oidc" },
-
                     AllowOfflineAccess = true,
-                    RequirePkce = false,
+
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.OfflineAccess,
-                        "CatalogService",
-                        "BasketService",
-                        "OrderService"
+                        "admin_permissions",
+                        "user_permissions"
                     }
                 },
             };

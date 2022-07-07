@@ -5,11 +5,12 @@ using WebMart.Microservices.CatalogService.Models;
 using WebMart.Microservices.CatalogService.Repos.Interfaces;
 using WebMart.Extensions.DTOs.SubCategory;
 using WebMart.Extensions.Pages;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebMart.Microservices.CatalogService.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class SubCategoriesController : ControllerBase
     {
         private readonly ISubCategoryRepo _repository;
@@ -21,7 +22,8 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("[action]", Name = "GetSubCategoriesByPages")]
+        [AllowAnonymous]
+        [HttpGet("[action]", Name = "GetSubCategories")]
         public ActionResult<ICollection<SubCategoryReadDto>> GetSubCategories([FromQuery] PageParams parameters)
         {
             Console.WriteLine("--> Getting SubСategories by pages...");
@@ -48,6 +50,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
 	        return Ok(subCategoriesDtosPaged);
         }
 
+        [AllowAnonymous]
         [HttpGet("[action]", Name = "GetSubCategoryById")]
         public ActionResult<SubCategoryReadDto> GetSubCategoryById([FromQuery] Guid id)
         {
@@ -59,18 +62,19 @@ namespace WebMart.Microservices.CatalogService.Controllers
                 return Ok(_mapper.Map<SubCategoryReadDto>(subCategory));
             }
 
-            return NotFound();
+            return NotFound("This subcategory does not exist.");
         }
 
-        [HttpGet("[action]", Name = "GetSubCategoryInCategory")]
-        public ActionResult<ICollection<SubCategoryReadDto>> GetSubCategoriesInCategory(
+        [AllowAnonymous]
+        [HttpGet("[action]", Name = "GetSubCategoriesByCategoryId")]
+        public ActionResult<ICollection<SubCategoryReadDto>> GetSubCategoriesByCategoryId(
             [FromQuery] Guid categoryId, [FromQuery] PageParams parameters)
         {
             Console.WriteLine($"--> Getting SubCategories by Category with Id: {categoryId} by pages...");
 
             if(!_repository.IsCategoryExists(categoryId))
             {
-                return NotFound();
+                return NotFound("This category does not exist.");
             }
 
             var subCategories = _repository.GetSubCategoriesByCategoryId(categoryId);
@@ -95,14 +99,15 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(subCategoriesDtosPaged);
         }
 
-        [HttpPost("[action]", Name = "CreateSubCategoryInCategory")]
+        [Authorize("admins_only")]
+        [HttpPost("[action]", Name = "CreateSubCategory")]
         public ActionResult CreateSubCategory([FromBody] SubCategoryCreateDto subCategoryCreateDto)
         {
             Console.WriteLine($"--> Creating SubCategory...");
 
             if (!_repository.IsCategoryExists(subCategoryCreateDto.CategoryId))
             {
-                return NotFound();
+                return NotFound("This category does not exist.");
             }
 
             var subCategory = _mapper.Map<SubCategory>(subCategoryCreateDto);
@@ -118,6 +123,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
                 );
         }
 
+        [Authorize("admins_only")]
         [HttpDelete("[action]", Name = "DeleteSubCategory")]
         public ActionResult DeleteSubCategory([FromQuery] Guid id)
         {
@@ -127,7 +133,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             if (subCategory == null)
             {
-                return NotFound();
+                return NotFound("This subcategory does not exist.");
             }
 
             _repository.DeleteSubCategory(subCategory);
@@ -136,6 +142,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return NoContent();
         }
 
+        [Authorize("admins_only")]
         [HttpPut("[action]", Name = "UpdateSubCategory")]
         public ActionResult UpdateSubCategory([FromQuery] Guid id, [FromBody] SubCategoryUpdateDto subCategoryUpdateDto)
         {
@@ -145,7 +152,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             if (subCategory == null)
             {
-                return NotFound();
+                return NotFound("This subcategory does not exist.");
             }
 
             _mapper.Map(subCategoryUpdateDto, subCategory);

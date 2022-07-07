@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using WebMart.Extensions.AsyncDataServices;
@@ -12,8 +14,9 @@ using WebMart.Microservices.OrdersService.Repos.Interfaces;
 
 namespace Namespace
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Authorize("users_allowed")]
+    [Route("api/[controller]")]
     public class OrdersController : ControllerBase
     {
         private readonly IOrderRepo _repository;
@@ -74,8 +77,10 @@ namespace Namespace
         }
 
         [HttpGet("[action]", Name = "GetOrdersByCustomerId")]
-        public ActionResult<ICollection<OrderDetailedReadDto>> GetOrdersByCustomerId([FromQuery] int customerId, [FromQuery] PageParams parameters)
+        public ActionResult<ICollection<OrderDetailedReadDto>> GetOrdersByCustomerId([FromQuery] PageParams parameters)
         {
+            var customerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             Console.WriteLine($"--> Gettng Basket with id of customer: {customerId}...");
 
             var orders = _repository.GetOrdersByCustomerId(customerId);

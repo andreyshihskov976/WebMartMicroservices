@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WebMart.Microservices.CatalogService.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepo _repository;
@@ -26,6 +26,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             _messageBusClient = messageBusClient;
         }
 
+        [AllowAnonymous]
         [HttpGet("[action]", Name = "GetProducts")]
         public ActionResult<ICollection<ProductReadDto>> GetProducts([FromQuery] PageParams parameters)
         {
@@ -54,6 +55,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(productsDtos);
         }
 
+        [AllowAnonymous]
         [HttpGet("[action]", Name = "GetProductById")]
         public ActionResult<ProductReadDto> GetProductById([FromQuery] Guid id)
         {
@@ -65,9 +67,10 @@ namespace WebMart.Microservices.CatalogService.Controllers
                 return Ok(_mapper.Map<ProductReadDto>(product));
             }
 
-            return NotFound();
+            return NotFound("This product does not exist.");
         }
 
+        [AllowAnonymous]
         [HttpGet("[action]", Name = "GetDetailedProductById")]
         public ActionResult<ProductDetailedReadDto> GetDetailedProductById([FromQuery] Guid id)
         {
@@ -79,11 +82,11 @@ namespace WebMart.Microservices.CatalogService.Controllers
                 return Ok(_mapper.Map<ProductDetailedReadDto>(product));
             }
 
-            return NotFound();
+            return NotFound("This product does not exist.");
         }
 
+        [Authorize("m2m.communication")]
         [HttpGet("[action]", Name = "GetPublishedProductById")]
-        [Authorize]
         public ActionResult<ProductPublishedDto> GetPublishedProductById([FromQuery] Guid id)
         {
             Console.WriteLine($"--> Getting published Product with Id: {id}...");
@@ -97,15 +100,16 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return NotFound();
         }
 
-        [HttpGet("[action]", Name = "GetProductsInCategory")]
-        public ActionResult<ICollection<ProductReadDto>> GetProductsInCategory(
+        [AllowAnonymous]
+        [HttpGet("[action]", Name = "GetProductsByCategoryId")]
+        public ActionResult<ICollection<ProductReadDto>> GetProductsByCategoryId(
             [FromQuery] Guid categoryId, [FromQuery] PageParams parameters)
         {
             Console.WriteLine($"--> Getting Products by Category with Id: {categoryId} by pages...");
 
-            if (_repository.IsCategoryExists(categoryId))
+            if (!_repository.IsCategoryExists(categoryId))
             {
-                return NotFound();
+                return NotFound("This category does not exist.");
             }
 
             var products = _repository.GetProductsByCategoryId(categoryId);
@@ -131,6 +135,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(productsDtos);
         }
 
+        [AllowAnonymous]
         [HttpGet("[action]", Name = "GetProductsInSubCategory")]
         public ActionResult<ICollection<ProductReadDto>> GetProductsInSubCategory(
             [FromQuery] Guid subCategoryId, [FromQuery] PageParams parameters)
@@ -139,10 +144,10 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             if (!_repository.IsSubCategoryExists(subCategoryId))
             {
-                return NotFound();
+                return NotFound("This subcategory does not exist.");
             }
 
-            var products = _repository.GetProductsByCategoryId(subCategoryId);
+            var products = _repository.GetProductsBySubCategoryId(subCategoryId);
 
             var productsDtos = PagedList<ProductReadDto>.ToPagedList(
                 _mapper.Map<ICollection<ProductReadDto>>(products),
@@ -165,14 +170,15 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return Ok(productsDtos);
         }
 
-        [HttpPost("[action]", Name = "CreateProductInSubCategory")]
+        [Authorize("admins_only")]
+        [HttpPost("[action]", Name = "CreateProduct")]
         public ActionResult CreateProduct([FromBody] ProductCreateDto productCreateDto)
         {
             Console.WriteLine("--> Creating Product...");
 
             if (!_repository.IsSubCategoryExists(productCreateDto.SubCategoryId))
             {
-                return NotFound();
+                return NotFound("This subcategory does not exist.");
             }
 
             var product = _mapper.Map<Product>(productCreateDto);
@@ -190,6 +196,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             );
         }
 
+        [Authorize("admins_only")]
         [HttpDelete("[action]", Name = "DeleteProduct")]
         public ActionResult DeleteProduct([FromQuery] Guid id)
         {
@@ -199,7 +206,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             if (product == null)
             {
-                return NotFound();
+                return NotFound("This product does not exist.");
             }
 
             _repository.DeleteProduct(product);
@@ -212,6 +219,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
             return NoContent();
         }
 
+        [Authorize("admins_only")]
         [HttpPut("[action]", Name = "UpdateProduct")]
         public ActionResult UpdateProduct([FromQuery] Guid id, [FromBody] ProductUpdateDto productUpdateDto)
         {
@@ -221,7 +229,7 @@ namespace WebMart.Microservices.CatalogService.Controllers
 
             if (product == null)
             {
-                return NotFound();
+                return NotFound("This product does not exist.");
             }
 
             _mapper.Map(productUpdateDto, product);

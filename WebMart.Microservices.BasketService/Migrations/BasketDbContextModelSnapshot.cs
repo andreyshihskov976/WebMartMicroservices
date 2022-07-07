@@ -43,8 +43,8 @@ namespace WebMart.Microservices.BasketService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsClosed")
                         .ValueGeneratedOnAdd()

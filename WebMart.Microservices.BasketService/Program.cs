@@ -7,6 +7,7 @@ using WebMart.Microservices.BasketService.Repos;
 using WebMart.Microservices.BasketService.Repos.Interfaces;
 using WebMart.Extensions.EventProcessing;
 using Microsoft.IdentityModel.Tokens;
+using IdentityModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,16 +27,26 @@ builder.Services.AddAuthentication("Bearer")
 
 builder.Services.AddAuthorization(options =>
     {
-        options.AddPolicy("ApiScope", policy =>
+        options.AddPolicy("m2m.communication", policy =>
         {
             policy.RequireAuthenticatedUser();
             policy.RequireClaim
             (
-                "scope",
+                JwtClaimTypes.Scope,
                 builder.Configuration
-                    .GetSection("IdentityParameters")
-                    .GetValue<string>("Scope")
+                    .GetSection("IdentityParameters:Scope").Value
             );
+        });
+        options.AddPolicy("admins_only", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(JwtClaimTypes.Scope,"admin_permissions");
+            policy.RequireClaim(JwtClaimTypes.Scope,"user_permissions");
+        });
+        options.AddPolicy("users_allowed", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(JwtClaimTypes.Scope,"user_permissions");
         });
     });
 
@@ -76,15 +87,10 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
-// app.UseEndpoints(endpoints =>
-// {
-//     endpoints.MapControllers()
-//         .RequireAuthorization("ApiScope");
-// });
-
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.MapControllers();
 

@@ -51,7 +51,7 @@ namespace WebMart.Microservices.OrdersService.Repos
             return _context.Orders.FirstOrDefault(o => o.Id == orderId);
         }
 
-        public ICollection<Order> GetOrdersByCustomerId(int customerId)
+        public ICollection<Order> GetOrdersByCustomerId(Guid customerId)
         {
             return _context.Orders.Where(o => o.Basket.CustomerId == customerId).OrderBy(o => o.OrderDate).ToList();
         }

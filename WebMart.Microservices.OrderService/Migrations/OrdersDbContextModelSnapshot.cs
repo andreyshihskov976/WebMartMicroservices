@@ -8,7 +8,7 @@ using WebMart.Microservices.OrdersService.Data;
 
 #nullable disable
 
-namespace WebMart.Microservices.OrdersService.Migrations
+namespace WebMart.Microservices.OrderService.Migrations
 {
     [DbContext(typeof(OrdersDbContext))]
     partial class OrdersDbContextModelSnapshot : ModelSnapshot
@@ -28,8 +28,8 @@ namespace WebMart.Microservices.OrdersService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("ProductCount")
                         .HasColumnType("integer");

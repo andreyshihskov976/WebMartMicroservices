@@ -9,10 +9,10 @@ using WebMart.Microservices.OrdersService.Data;
 
 #nullable disable
 
-namespace WebMart.Microservices.OrdersService.Migrations
+namespace WebMart.Microservices.OrderService.Migrations
 {
     [DbContext(typeof(OrdersDbContext))]
-    [Migration("20220701121957_InitialCreate")]
+    [Migration("20220706131223_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,8 +30,8 @@ namespace WebMart.Microservices.OrdersService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("ProductCount")
                         .HasColumnType("integer");

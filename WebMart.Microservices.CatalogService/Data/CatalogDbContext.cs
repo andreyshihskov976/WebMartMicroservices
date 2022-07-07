@@ -13,6 +13,8 @@ namespace WebMart.Microservices.CatalogService.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             //Link for Category -> SubCategory
             modelBuilder
                 .Entity<Category>()
